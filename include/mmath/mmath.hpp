@@ -150,6 +150,9 @@ namespace mmath {
         matrix_base<T> operator^(std::integral auto b) const;
 
         T tr() const {
+            if (this->is_empty()) {
+                throw std::invalid_argument("Matrix must not be empty to calculate trace");
+            }
             if (!this->is_square()) {
                 throw std::invalid_argument("Matrix must be square to calculate trace");
             }
@@ -161,11 +164,6 @@ namespace mmath {
             }
 
             return sum;
-        }
-
-        [[maybe_unused]]
-        T trace() const {
-            return tr();
         }
 
     public:

@@ -28,9 +28,10 @@ matrix_constructor_test(size_t rows, size_t cols, bool is_empty, bool is_identit
     }
 }
 
-TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, unsigned char, wchar_t, char8_t,
-                   char16_t, char32_t, signed short int, unsigned short int, signed int, unsigned int, signed long int,
-                   unsigned long int, signed long long int, unsigned long long int, float, double, long double) {
+TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, // NOLINT(cert-err58-cpp)
+                   unsigned char, wchar_t, char8_t, char16_t, char32_t, signed short int, unsigned short int,
+                   signed int, unsigned int, signed long int, unsigned long int, signed long long int,
+                   unsigned long long int, float, double, long double) {
     SECTION("Default Initialization") {
         mmath::matrix_base<TestType> default_init_int{};
 
@@ -39,6 +40,8 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, un
         CHECK(default_init_int.is_square());
         CHECK(default_init_int.is_identity()); // Vacuously true
         INFO(".is_identity() should be vacuously true");
+        CHECK(default_init_int.is_zero());
+        INFO(".is_zero() should be vacuously true");
         CHECK(default_init_int.is_empty());
     }
 
@@ -126,6 +129,44 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, un
         CHECK_NOTHROW(matrix(3, 3));
     }
 
+    SECTION("Zero Matrix") {
+        mmath::matrix_base<TestType> matrix_a{1, 3};
+        CHECK(matrix_a.is_zero());
+        CHECK_FALSE(matrix_a.is_empty());
+        CHECK_FALSE(matrix_a.is_identity());
+        CHECK(matrix_a(1, 1) == TestType{});
+        CHECK(matrix_a(1, 2) == TestType{});
+        CHECK(matrix_a(1, 3) == TestType{});
+
+        mmath::matrix_base<TestType> matrix_b{3, 3};
+        CHECK(matrix_b.is_zero());
+        CHECK_FALSE(matrix_b.is_empty());
+        CHECK_FALSE(matrix_b.is_identity());
+        CHECK(matrix_b(1, 1) == TestType{});
+        CHECK(matrix_b(1, 2) == TestType{});
+        CHECK(matrix_b(1, 3) == TestType{});
+        CHECK(matrix_b(2, 1) == TestType{});
+        CHECK(matrix_b(2, 2) == TestType{});
+        CHECK(matrix_b(2, 3) == TestType{});
+        CHECK(matrix_b(3, 1) == TestType{});
+        CHECK(matrix_b(3, 2) == TestType{});
+        CHECK(matrix_b(3, 3) == TestType{});
+
+        mmath::matrix_base<TestType> matrix_c{{1}, {0, 1}, {0, 0, 1}};
+        CHECK_FALSE(matrix_c.is_zero());
+        CHECK_FALSE(matrix_c.is_empty());
+        CHECK(matrix_c.is_identity());
+        //CHECK(matrix_b(1, 1) == TestType{});
+        CHECK(matrix_c(1, 2) == TestType{});
+        CHECK(matrix_c(1, 3) == TestType{});
+        CHECK(matrix_c(2, 1) == TestType{});
+        //CHECK(matrix_b(2, 2) == TestType{});
+        CHECK(matrix_c(2, 3) == TestType{});
+        CHECK(matrix_c(3, 1) == TestType{});
+        CHECK(matrix_c(3, 2) == TestType{});
+        //CHECK(matrix_b(3, 3) == TestType{});
+    }
+
     SECTION("Initializer List Validation - 3x3") {
         mmath::matrix_base<int> matrix{{5, 6, 7},
                                        {1, 3, 2},
@@ -133,6 +174,7 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, un
         CHECK(matrix.size_col() == 3);
         CHECK(matrix.size_row() == 3);
         CHECK(matrix.is_square());
+        CHECK_FALSE(matrix.is_zero());
         CHECK_FALSE(matrix.is_identity());
         CHECK_FALSE(matrix.is_empty());
         CHECK(matrix(1, 1) == 5);
@@ -153,6 +195,7 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, un
         CHECK(matrix.size_col() == 3);
         CHECK(matrix.size_row() == 3);
         CHECK(matrix.is_square());
+        CHECK_FALSE(matrix.is_zero());
         CHECK_FALSE(matrix.is_identity());
         CHECK_FALSE(matrix.is_empty());
         CHECK(matrix(1, 1) == 5);
@@ -174,6 +217,7 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, un
         CHECK(matrix.size_row() == 3);
         CHECK(matrix.is_square());
         CHECK(matrix.is_identity());
+        CHECK_FALSE(matrix.is_zero());
         CHECK_FALSE(matrix.is_empty());
         CHECK(matrix(1, 1) == 1);
         CHECK(matrix(1, 2) == 0);
@@ -192,6 +236,7 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, un
                                             {0, 0}};
         CHECK(matrix.size_col() == 2);
         CHECK(matrix.size_row() == 3);
+        CHECK_FALSE(matrix.is_zero());
         CHECK_FALSE(matrix.is_square());
         CHECK_FALSE(matrix.is_identity());
         CHECK_FALSE(matrix.is_empty());
@@ -208,6 +253,7 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, un
                                             {0, 1, 0}};
         CHECK(matrix.size_col() == 3);
         CHECK(matrix.size_row() == 2);
+        CHECK_FALSE(matrix.is_zero());
         CHECK_FALSE(matrix.is_square());
         CHECK_FALSE(matrix.is_identity());
         CHECK_FALSE(matrix.is_empty());
@@ -594,6 +640,7 @@ TEST_CASE("Matrix Multiplication") {
 
         CHECK(result.size_col() == 2);
         CHECK(result.size_row() == 4);
+        CHECK_FALSE(result.is_zero());
         CHECK_FALSE(result.is_identity());
         CHECK_FALSE(result.is_square());
         CHECK_FALSE(result.is_empty());
@@ -702,5 +749,62 @@ TEST_CASE("Matrix Powers") {
         CHECK(result(3, 1) == 756);
         CHECK(result(3, 2) == 984);
         CHECK(result(3, 3) == 1212);
+    }
+}
+
+TEST_CASE("Matrix Trace") {
+
+    SECTION("Empty Matrix") {
+        mmath::matrix_base<int> matrix_a{};
+        CHECK_THROWS_AS(mmath::tr(matrix_a), std::invalid_argument);
+        CHECK_THROWS_AS(matrix_a.tr(), std::invalid_argument);
+
+        matrix_a = mmath::matrix_base<int>{{},
+                                           {},
+                                           {}};
+        CHECK_THROWS_AS(mmath::tr(matrix_a), std::invalid_argument);
+        CHECK_THROWS_AS(matrix_a.tr(), std::invalid_argument);
+
+        matrix_a = mmath::matrix_base<int>{0, 10};
+        CHECK_THROWS_AS(mmath::tr(matrix_a), std::invalid_argument);
+        CHECK_THROWS_AS(matrix_a.tr(), std::invalid_argument);
+    }
+
+    SECTION("Size Checks") {
+        mmath::matrix_base<int> matrix_incorrect_a{{32, 1, 60, 2}};
+        mmath::matrix_base<int> matrix_incorrect_b{{32, 1}};
+        mmath::matrix_base<int> matrix_incorrect_c{{32},
+                                                   {1},
+                                                   {60},
+                                                   {2}};
+
+        CHECK_THROWS_AS(mmath::tr(matrix_incorrect_a), std::invalid_argument);
+        CHECK_THROWS_AS(mmath::tr(matrix_incorrect_b), std::invalid_argument);
+        CHECK_THROWS_AS(mmath::tr(matrix_incorrect_c), std::invalid_argument);
+        CHECK_THROWS_AS(matrix_incorrect_a.tr(), std::invalid_argument);
+        CHECK_THROWS_AS(matrix_incorrect_b.tr(), std::invalid_argument);
+        CHECK_THROWS_AS(matrix_incorrect_c.tr(), std::invalid_argument);
+
+    }
+
+    SECTION("Trace Validation") {
+        mmath::matrix_base<int> matrix_int{{12, 34, 56},
+                                           {32, 51, 2},
+                                           {1,  2,  3}};
+
+        REQUIRE_NOTHROW(mmath::tr(matrix_int));
+
+        CHECK(mmath::tr(matrix_int) == 66);
+        CHECK(matrix_int.tr() == 66);
+
+        mmath::matrix_base<double> matrix_double{{12.12,  34.34,  56.56},
+                                                 {32.12,  51.11,  2.2222},
+                                                 {1.1111, 2.2222, 3.3333}};
+
+        REQUIRE_NOTHROW(mmath::tr(matrix_double));
+
+        using namespace Catch::literals;
+        CHECK(mmath::tr(matrix_double) == 66.5633_a);
+        CHECK(matrix_double.tr() == 66.5633_a);
     }
 }
