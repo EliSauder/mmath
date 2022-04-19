@@ -3,15 +3,16 @@ project(mmath LANGUAGES CXX VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_library(mmath INTERFACE include/mmath/mmath.hpp)
-target_include_directories(mmath INTERFACE include/)
+add_library(mmath STATIC include/mmath/mmath.hpp src/mmath/mmath.cpp)
+target_include_directories(mmath PUBLIC include/)
 
-find_package(Catch2 REQUIRED)
 
-add_executable(mmath_test test/mmath/mmath_test.cpp)
-target_link_libraries(mmath_test PRIVATE mmath)
-target_link_libraries(mmath_test PRIVATE Catch2::Catch2WithMain)
+find_package(Catch2 3 REQUIRED)
+
+add_executable(mmath_tests test/mmath/mmath_test.cpp)
+target_link_libraries(mmath_tests PRIVATE mmath)
+target_link_libraries(mmath_tests PRIVATE Catch2::Catch2WithMain)
 
 include(CTest)
 include(Catch)
-catch_discover_tests(mmath_test)
+catch_discover_tests(mmath_tests)
