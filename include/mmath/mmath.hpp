@@ -24,6 +24,10 @@ namespace mmath {
         { b * a };
         { a + b };
         { b + a };
+        { b == a };
+        { a == b };
+        { b != a };
+        { a != b };
     };
 
     template<typename T>
@@ -103,14 +107,19 @@ namespace mmath {
         }
 
         matrix_base<T> operator+(const matrix_base<T>& b) const {
+            if (this->is_empty() || b.is_empty())
+                throw std::invalid_argument("Matrices used in addition cannot be empty");
             return add_sub_matrix(b, true);
         }
 
         matrix_base<T> operator-(const matrix_base<T>& b) const {
+            if (this->is_empty() || b.is_empty())
+                throw std::invalid_argument("Matrices used in subtraction cannot be empty");
             return add_sub_matrix(b, false);
         }
 
         matrix_base<T> operator*(numeric auto b) const {
+            if (this->is_empty()) throw std::invalid_argument("Matrices used in multiplication cannot be empty");
             matrix_base<T> result{this->data, this->num_row, this->num_col};
             for (T& i: result.data) i = i * b;
             return result;
@@ -118,6 +127,8 @@ namespace mmath {
 
 
         matrix_base<T> operator*(const matrix_base<T>& b) const {
+            if (this->is_empty() || b.is_empty())
+                throw std::invalid_argument("Matrices used in multiplication cannot be empty");
             if (this->num_col != b.num_row)
                 throw std::domain_error("Matrix a must have the same number of columns as there are rows in matrix b");
 
@@ -161,6 +172,14 @@ namespace mmath {
         [[nodiscard]]
         bool is_empty() const {
             return num_row == 0 || num_col == 0;
+        }
+
+        [[nodiscard]]
+        bool is_zero() const {
+            for (auto& i: this->data) {
+                if (i != 0) return false;
+            }
+            return true;
         }
 
         [[nodiscard]]
