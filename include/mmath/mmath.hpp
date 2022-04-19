@@ -228,13 +228,11 @@ namespace mmath {
     }
 
     template<expression T>
-    matrix_base<T> make_identity_matrix(size_t num_row, size_t num_col) {
-        matrix_base<T> result{num_row, num_col};
+    matrix_base<T> make_identity_matrix(size_t size) {
+        matrix_base<T> result{size, size};
 
-        for (int i = 1; i <= result.size_row(); ++i) {
-            for (int j = 1; j <= result.size_col(); ++j) {
-                result(i, j) = i == j ? 1 : 0;
-            }
+        for (int i = 1; i <= size; ++i) {
+            result(i, i) = 1;
         }
 
         return result;
@@ -248,7 +246,7 @@ namespace mmath {
             throw std::invalid_argument("Power cannot be less than 1");
 
         if (b == 0)
-            return make_identity_matrix<T>(this->num_row, this->num_col);
+            return make_identity_matrix<T>(this->num_row);
 
         matrix_base<T> result{this->data, this->num_row, this->num_col};
 

@@ -152,7 +152,9 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, //
         CHECK(matrix_b(3, 2) == TestType{});
         CHECK(matrix_b(3, 3) == TestType{});
 
-        mmath::matrix_base<TestType> matrix_c{{1}, {0, 1}, {0, 0, 1}};
+        mmath::matrix_base<TestType> matrix_c{{1},
+                                              {0, 1},
+                                              {0, 0, 1}};
         CHECK_FALSE(matrix_c.is_zero());
         CHECK_FALSE(matrix_c.is_empty());
         CHECK(matrix_c.is_identity());
@@ -806,5 +808,29 @@ TEST_CASE("Matrix Trace") {
         using namespace Catch::literals;
         CHECK(mmath::tr(matrix_double) == 66.5633_a);
         CHECK(matrix_double.tr() == 66.5633_a);
+    }
+}
+
+// TODO: Add tests for the non-const operator()
+
+TEMPLATE_TEST_CASE("make_identity_matrix", "[matrix_base][template]", signed char, // NOLINT(cert-err58-cpp)
+                   unsigned char, wchar_t, char8_t, char16_t, char32_t, signed short int, unsigned short int,
+                   signed int, unsigned int, signed long int, unsigned long int, signed long long int,
+                   unsigned long long int, float, double, long double) {
+    SECTION("Empty Matrix") {
+        mmath::matrix_base<TestType> matrix = mmath::make_identity_matrix<TestType>(0);
+        CHECK(matrix.is_empty());
+    }
+
+    SECTION("1x1 Identity") {
+        mmath::matrix_base<TestType> matrix = mmath::make_identity_matrix<TestType>(1);
+        CHECK(matrix.is_identity());
+    }
+
+    SECTION("1-100 Identity") {
+        for (int i = 1; i <= 100; ++i) {
+            mmath::matrix_base<TestType> matrix = mmath::make_identity_matrix<TestType>(i);
+            CHECK(matrix.is_identity());
+        }
     }
 }
