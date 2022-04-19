@@ -811,7 +811,57 @@ TEST_CASE("Matrix Trace") {
     }
 }
 
-// TODO: Add tests for the non-const operator()
+TEST_CASE("operator() assignment tests") {
+    mmath::matrix_base<int> m{{1, 2, 3},
+                              {4, 5, 6},
+                              {7, 8, 9}};
+
+    CHECK_NOTHROW(m(1, 1) = 30);
+    CHECK_NOTHROW(m(1, 2) = 0);
+    CHECK_NOTHROW(m(1, 3) = 15);
+    CHECK_NOTHROW(m(2, 1) = -30);
+    CHECK_NOTHROW(m(2, 2) = 4);
+    CHECK_NOTHROW(m(2, 3) = 8);
+    CHECK_NOTHROW(m(3, 1) = -9);
+    CHECK_NOTHROW(m(3, 2) = 3);
+    CHECK_NOTHROW(m(3, 3) = 2);
+
+    CHECK(m(1, 1) == 30);
+    CHECK(m(1, 2) == 0);
+    CHECK(m(1, 3) == 15);
+    CHECK(m(2, 1) == -30);
+    CHECK(m(2, 2) == 4);
+    CHECK(m(2, 3) == 8);
+    CHECK(m(3, 1) == -9);
+    CHECK(m(3, 2) == 3);
+    CHECK(m(3, 3) == 2);
+
+    using namespace Catch::literals;
+
+    mmath::matrix_base<double> m_d{{1.14, 2.22, 3.1415},
+                                   {4.44, 6.1},
+                                   {3.2,  5.5,  9.999}};
+
+    CHECK_NOTHROW(m_d(1, 1) = 2.155);
+    CHECK_NOTHROW(m_d(1, 2) = -2.155);
+    CHECK_NOTHROW(m_d(1, 3) = 0.5128);
+    CHECK_NOTHROW(m_d(2, 1) = 1.4832);
+    CHECK_NOTHROW(m_d(2, 2) = 1208.4);
+    CHECK_NOTHROW(m_d(2, 3) = -16.6636);
+    CHECK_NOTHROW(m_d(3, 1) = 100);
+    CHECK_NOTHROW(m_d(3, 2) = 32.3232);
+    CHECK_NOTHROW(m_d(3, 3) = -9.412);
+
+    CHECK(m_d(1, 1) == 2.155_a);
+    CHECK(m_d(1, 2) == -2.155_a);
+    CHECK(m_d(1, 3) == 0.5128_a);
+    CHECK(m_d(2, 1) == 1.4832_a);
+    CHECK(m_d(2, 2) == 1208.4_a);
+    CHECK(m_d(2, 3) == -16.6636_a);
+    CHECK(m_d(3, 1) == 100_a);
+    CHECK(m_d(3, 2) == 32.3232_a);
+    CHECK(m_d(3, 3) == -9.412_a);
+}
 
 TEMPLATE_TEST_CASE("make_identity_matrix", "[matrix_base][template]", signed char, // NOLINT(cert-err58-cpp)
                    unsigned char, wchar_t, char8_t, char16_t, char32_t, signed short int, unsigned short int,
