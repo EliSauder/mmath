@@ -149,6 +149,25 @@ namespace mmath {
 
         matrix_base<T> operator^(std::integral auto b) const;
 
+        T tr() const {
+            if (!this->is_square()) {
+                throw std::invalid_argument("Matrix must be square to calculate trace");
+            }
+
+            T sum = T{};
+
+            for (int i = 1; i <= num_row; ++i) {
+                sum = sum + (*this)(i, i);
+            }
+
+            return sum;
+        }
+
+        [[maybe_unused]]
+        T trace() const {
+            return tr();
+        }
+
     public:
         [[nodiscard]]
         bool is_square() const {
@@ -239,6 +258,12 @@ namespace mmath {
             result = result * (*this);
 
         return result;
+    }
+
+    template<expression T>
+    [[maybe_unused]]
+    T tr(const matrix_base<T>& matrix) {
+        return matrix.tr();
     }
 
     template<expression_printable T>
