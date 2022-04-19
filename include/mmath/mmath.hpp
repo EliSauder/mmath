@@ -11,7 +11,7 @@
 
 namespace mmath {
     template<typename T>
-    concept numeric = std::integral<T> || std::floating_point<T>;
+    concept numeric = (std::integral<T> || std::floating_point<T>) && !std::same_as<T, bool>;
 
     template<typename T, typename S>
     concept expression_base = numeric<S> &&
@@ -28,7 +28,6 @@ namespace mmath {
 
     template<typename T>
     concept expression =
-    expression_base<T, bool> &&
     expression_base<T, signed char> &&
     expression_base<T, unsigned char> &&
     expression_base<T, wchar_t> &&
@@ -77,7 +76,6 @@ namespace mmath {
         matrix_base(size_t rows, size_t cols, T default_value) : num_row(rows), num_col(cols),
                                                                  data(rows * cols, default_value) {};
 
-
         [[maybe_unused]]
         matrix_base(std::initializer_list<std::initializer_list<T>> il) : num_row(il.size()), num_col(0) {
             for (auto& i: il) num_col = i.size() > num_col ? i.size() : num_col;
@@ -93,13 +91,13 @@ namespace mmath {
 
     public:
         T operator()(size_t row, size_t column) const {
-            if (row > num_row || column > num_col)
+            if (row == 0 || column == 0 || row > num_row || column > num_col)
                 throw std::out_of_range("Requested element lies outside of the Matrix.");
             return data[(num_col * (row - 1)) + (column - 1)];
         }
 
         T& operator()(size_t row, size_t column) {
-            if (row > num_row || column > num_col)
+            if (row == 0 || column == 0 || row > num_row || column > num_col)
                 throw std::out_of_range("Requested element lies outside of the Matrix.");
             return data[(num_col * (row - 1)) + (column - 1)];
         }
@@ -150,12 +148,19 @@ namespace mmath {
         bool is_identity() const {
             if (!is_square()) return false;
 
-            for (int i = 0; i < data.size(); i++) {
-                if (data[i] != 0 && (i % (num_row + 1) != 0 || data[i] != 1))
-                    return false;
+            for (int i = 1; i <= num_row; ++i) {
+                for (int j = 1; j <= num_col; ++j) {
+                    if (i != j && (*this)(i, j) != 0) return false;
+                    if (i == j && (*this)(i, j) != 1) return false;
+                }
             }
 
             return true;
+        }
+
+        [[nodiscard]]
+        bool is_empty() const {
+            return num_row == 0 || num_col == 0;
         }
 
         [[nodiscard]]
