@@ -811,8 +811,6 @@ TEST_CASE("Matrix Trace") {
     }
 }
 
-// TODO: Add tests for the non-const operator()
-
 TEMPLATE_TEST_CASE("make_identity_matrix", "[matrix_base][template]", signed char, // NOLINT(cert-err58-cpp)
                    unsigned char, wchar_t, char8_t, char16_t, char32_t, signed short int, unsigned short int,
                    signed int, unsigned int, signed long int, unsigned long int, signed long long int,
@@ -833,4 +831,37 @@ TEMPLATE_TEST_CASE("make_identity_matrix", "[matrix_base][template]", signed cha
             CHECK(matrix.is_identity());
         }
     }
+}
+
+TEST_CASE("Matrix Transpose") {
+
+    mmath::matrix_base<int> m{{1, 2, 3},
+                              {4, 5, 6},
+                              {7, 8, 9}};
+
+    mmath::matrix_base<int> n{{1, 4, 7},
+                              {2, 5, 8},
+                              {3, 6, 9}};
+
+    auto result1 = m.transpose();
+    auto result2 = mmath::transpose(m);
+
+    CHECK(result1(1, 1) == n(1, 1));
+    CHECK(result2(1, 1) == n(1, 1));
+    CHECK(result1(1, 2) == n(1, 2));
+    CHECK(result2(1, 2) == n(1, 2));
+    CHECK(result1(1, 3) == n(1, 3));
+    CHECK(result2(1, 3) == n(1, 3));
+    CHECK(result1(2, 1) == n(2, 1));
+    CHECK(result2(2, 1) == n(2, 1));
+    CHECK(result1(2, 2) == n(2, 2));
+    CHECK(result2(2, 2) == n(2, 2));
+    CHECK(result1(2, 3) == n(2, 3));
+    CHECK(result2(2, 3) == n(2, 3));
+    CHECK(result1(3, 1) == n(3, 1));
+    CHECK(result2(3, 1) == n(3, 1));
+    CHECK(result1(3, 2) == n(3, 2));
+    CHECK(result2(3, 2) == n(3, 2));
+    CHECK(result1(3, 3) == n(3, 3));
+    CHECK(result2(3, 3) == n(3, 3));
 }

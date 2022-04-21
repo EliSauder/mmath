@@ -8,52 +8,12 @@
 #include <concepts>
 #include <vector>
 #include <ostream>
+#include <queue>
+
+#include "mmath_concepts.hpp"
+#include "mmath_matrixelementary.hpp"
 
 namespace mmath {
-    template<typename T>
-    concept numeric = (std::integral<T> || std::floating_point<T>) && !std::same_as<T, bool>;
-
-    template<typename T, typename S>
-    concept expression_base = numeric<S> &&
-                              std::default_initializable<T> &&
-                              std::copyable<T> && requires(T a) {
-        { a * a };
-        { a + a };
-    } && requires(T a, S b) {
-        { a * b };
-        { b * a };
-        { a + b };
-        { b + a };
-        { b == a };
-        { a == b };
-        { b != a };
-        { a != b };
-    };
-
-    template<typename T>
-    concept expression =
-    expression_base<T, signed char> &&
-    expression_base<T, unsigned char> &&
-    expression_base<T, wchar_t> &&
-    expression_base<T, char8_t> &&
-    expression_base<T, char16_t> &&
-    expression_base<T, char32_t> &&
-    expression_base<T, signed short int> &&
-    expression_base<T, unsigned short int> &&
-    expression_base<T, signed int> &&
-    expression_base<T, unsigned int> &&
-    expression_base<T, signed long int> &&
-    expression_base<T, unsigned long int> &&
-    expression_base<T, signed long long int> &&
-    expression_base<T, unsigned long long int> &&
-    expression_base<T, float> &&
-    expression_base<T, double> &&
-    expression_base<T, long double>;
-
-    template<typename T>
-    concept expression_printable = expression<T> && requires(std::ostream& os, T a) {
-        { os << a } -> std::convertible_to<std::ostream&>;
-    };
 
     template<expression T>
     class matrix_base {
@@ -125,7 +85,6 @@ namespace mmath {
             return result;
         }
 
-
         matrix_base<T> operator*(const matrix_base<T>& b) const {
             if (this->is_empty() || b.is_empty())
                 throw std::invalid_argument("Matrices used in multiplication cannot be empty");
@@ -149,6 +108,8 @@ namespace mmath {
 
         matrix_base<T> operator^(std::integral auto b) const;
 
+
+    public:
         T tr() const {
             if (this->is_empty()) {
                 throw std::invalid_argument("Matrix must not be empty to calculate trace");
@@ -164,6 +125,31 @@ namespace mmath {
             }
 
             return sum;
+        }
+
+        // Row operations
+    public:
+
+        mmath::matrix_base<T> operator|(matrix_row_switch row) {
+            // TODO: Implement
+        }
+
+        template<expression S>
+        mmath::matrix_base<T> operator|(matrix_row_switch_generic<S> row) {
+            // TODO: Implement
+        }
+
+    public:
+        matrix_base<T> transpose() {
+            matrix_base<T> new_data{num_row, num_col};
+
+            for (int i = 1; i <= num_row; ++i) {
+                for (int j = 1; j <= num_col; ++j) {
+                    new_data(j, i) = (*this)(i, j);
+                }
+            }
+
+            return new_data;
         }
 
     public:
@@ -210,6 +196,7 @@ namespace mmath {
         }
 
     private:
+        [[nodiscard]]
         matrix_base<T> add_sub_matrix(const matrix_base<T>& b, bool add_sub) const {
             if (this->num_col != b.num_col || this->num_row != b.num_row)
                 throw std::domain_error("Matrices must be the same size");
@@ -221,6 +208,14 @@ namespace mmath {
             return matrix_base<T>{std::move(new_data), num_row, num_col};
         }
     };
+
+    void test() {
+        matrix_base<int> m{};
+        m | 2_R + 2 * 3_R >> 2_R;
+        m | 2_R + 3_R >> 2_R;
+        m | 3_R >> 2_R;
+        m | 2 * 3_R >> 2_R;
+    }
 
     template<expression T>
     matrix_base<T> operator*(numeric auto a, const matrix_base<T>& b) {
@@ -260,6 +255,11 @@ namespace mmath {
     [[maybe_unused]]
     T tr(const matrix_base<T>& matrix) {
         return matrix.tr();
+    }
+
+    template<expression T>
+    matrix_base<T> transpose(const matrix_base<T>& m) {
+        return transpose(m);
     }
 
     template<expression_printable T>
