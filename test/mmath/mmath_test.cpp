@@ -11,10 +11,10 @@ void
 inline
 matrix_constructor_test(size_t rows, size_t cols, bool is_empty, bool is_identity, bool is_square, bool use_entry_value,
                         T entry_value) {
-    mmath::matrix_base<T> matrix = use_entry_value ? mmath::matrix_base<T>{rows, cols, entry_value}
-                                                   : mmath::matrix_base<T>{rows, cols};
+    mmath::matrix_base<T> matrix = use_entry_value ? mmath::matrix_base<T>{ rows, cols, entry_value }
+                                                   : mmath::matrix_base<T>{ rows, cols };
     INFO("Matrix Size: " << rows << "x" << cols << ", use_entry_value: " << use_entry_value << ", entry_value: "
-                         << (int) entry_value);
+                         << (int)entry_value);
     CHECK(matrix.size_row() == rows);
     CHECK(matrix.size_col() == cols);
     CHECK(matrix.is_empty() == is_empty);
@@ -53,7 +53,7 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, //
         CHECK(matrix.size_row() == 3);
         CHECK(matrix.size_col() == 0);
 
-        matrix = mmath::matrix_base<TestType>{{1},
+        matrix = mmath::matrix_base<TestType>{{ 1 },
                                               {},
                                               {}};
         CHECK_FALSE(matrix.is_empty());
@@ -65,7 +65,7 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, //
         CHECK(matrix.size_row() == 1);
         CHECK(matrix.size_col() == 0);
 
-        matrix = mmath::matrix_base<TestType>{{1}};
+        matrix = mmath::matrix_base<TestType>{{ 1 }};
         CHECK_FALSE(matrix.is_empty());
         CHECK(matrix.size_row() == 1);
         CHECK(matrix.size_col() == 1);
@@ -75,41 +75,41 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, //
         CHECK(matrix.size_row() == 0);
         CHECK(matrix.size_col() == 0);
 
-        matrix = mmath::matrix_base<TestType>{0,
-                                              0};
+        matrix = mmath::matrix_base<TestType>{ 0,
+                                               0 };
         CHECK(matrix.is_empty());
         CHECK(matrix.size_row() == 0);
         CHECK(matrix.size_col() == 0);
 
-        matrix = mmath::matrix_base<TestType>{1, 1};
+        matrix = mmath::matrix_base<TestType>{ 1, 1 };
         CHECK_FALSE(matrix.is_empty());
         CHECK(matrix.size_row() == 1);
         CHECK(matrix.size_col() == 1);
 
-        matrix = mmath::matrix_base<TestType>{0, 3};
+        matrix = mmath::matrix_base<TestType>{ 0, 3 };
         CHECK(matrix.is_empty());
         CHECK(matrix.size_row() == 0);
         CHECK(matrix.size_col() == 3);
 
-        matrix = mmath::matrix_base<TestType>{1, 3};
+        matrix = mmath::matrix_base<TestType>{ 1, 3 };
         CHECK_FALSE(matrix.is_empty());
         CHECK(matrix.size_row() == 1);
         CHECK(matrix.size_col() == 3);
 
-        matrix = mmath::matrix_base<TestType>{3, 0};
+        matrix = mmath::matrix_base<TestType>{ 3, 0 };
         CHECK(matrix.is_empty());
         CHECK(matrix.size_row() == 3);
         CHECK(matrix.size_col() == 0);
 
-        matrix = mmath::matrix_base<TestType>{3, 1};
+        matrix = mmath::matrix_base<TestType>{ 3, 1 };
         CHECK_FALSE(matrix.is_empty());
         CHECK(matrix.size_row() == 3);
         CHECK(matrix.size_col() == 1);
     }
 
     SECTION("Checkout Out of Bounds Access") {
-        mmath::matrix_base<int> matrix{3,
-                                       3};
+        mmath::matrix_base<int> matrix{ 3,
+                                        3 };
         CHECK(matrix.size_col() == 3);
         CHECK(matrix.size_row() == 3);
         CHECK_THROWS_AS(matrix(0, 0), std::out_of_range);
@@ -130,7 +130,7 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, //
     }
 
     SECTION("Zero Matrix") {
-        mmath::matrix_base<TestType> matrix_a{1, 3};
+        mmath::matrix_base<TestType> matrix_a{ 1, 3 };
         CHECK(matrix_a.is_zero());
         CHECK_FALSE(matrix_a.is_empty());
         CHECK_FALSE(matrix_a.is_identity());
@@ -138,7 +138,7 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, //
         CHECK(matrix_a(1, 2) == TestType{});
         CHECK(matrix_a(1, 3) == TestType{});
 
-        mmath::matrix_base<TestType> matrix_b{3, 3};
+        mmath::matrix_base<TestType> matrix_b{ 3, 3 };
         CHECK(matrix_b.is_zero());
         CHECK_FALSE(matrix_b.is_empty());
         CHECK_FALSE(matrix_b.is_identity());
@@ -152,9 +152,9 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, //
         CHECK(matrix_b(3, 2) == TestType{});
         CHECK(matrix_b(3, 3) == TestType{});
 
-        mmath::matrix_base<TestType> matrix_c{{1},
-                                              {0, 1},
-                                              {0, 0, 1}};
+        mmath::matrix_base<TestType> matrix_c{{ 1 },
+                                              { 0, 1 },
+                                              { 0, 0, 1 }};
         CHECK_FALSE(matrix_c.is_zero());
         CHECK_FALSE(matrix_c.is_empty());
         CHECK(matrix_c.is_identity());
@@ -170,9 +170,9 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, //
     }
 
     SECTION("Initializer List Validation - 3x3") {
-        mmath::matrix_base<int> matrix{{5, 6, 7},
-                                       {1, 3, 2},
-                                       {7, 8, 0}};
+        mmath::matrix_base<int> matrix{{ 5, 6, 7 },
+                                       { 1, 3, 2 },
+                                       { 7, 8, 0 }};
         CHECK(matrix.size_col() == 3);
         CHECK(matrix.size_row() == 3);
         CHECK(matrix.is_square());
@@ -191,9 +191,9 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, //
     }
 
     SECTION("Initializer List Validation - 3x3 Missing Columns") {
-        mmath::matrix_base<int> matrix{{5, 6, 7},
-                                       {1, 3},
-                                       {7, 8}};
+        mmath::matrix_base<int> matrix{{ 5, 6, 7 },
+                                       { 1, 3 },
+                                       { 7, 8 }};
         CHECK(matrix.size_col() == 3);
         CHECK(matrix.size_row() == 3);
         CHECK(matrix.is_square());
@@ -212,9 +212,9 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, //
     }
 
     SECTION("Initializer List Validation - 3x3 Identity") {
-        mmath::matrix_base<TestType> matrix{{1, 0, 0},
-                                            {0, 1, 0},
-                                            {0, 0, 1}};
+        mmath::matrix_base<TestType> matrix{{ 1, 0, 0 },
+                                            { 0, 1, 0 },
+                                            { 0, 0, 1 }};
         CHECK(matrix.size_col() == 3);
         CHECK(matrix.size_row() == 3);
         CHECK(matrix.is_square());
@@ -233,9 +233,9 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, //
     }
 
     SECTION("Initializer List Validation - 3x2 !Identity") {
-        mmath::matrix_base<TestType> matrix{{1, 0},
-                                            {0, 1},
-                                            {0, 0}};
+        mmath::matrix_base<TestType> matrix{{ 1, 0 },
+                                            { 0, 1 },
+                                            { 0, 0 }};
         CHECK(matrix.size_col() == 2);
         CHECK(matrix.size_row() == 3);
         CHECK_FALSE(matrix.is_zero());
@@ -251,8 +251,8 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, //
     }
 
     SECTION("Initializer List Validation - 2x3 !Identity") {
-        mmath::matrix_base<TestType> matrix{{1, 0, 0},
-                                            {0, 1, 0}};
+        mmath::matrix_base<TestType> matrix{{ 1, 0, 0 },
+                                            { 0, 1, 0 }};
         CHECK(matrix.size_col() == 3);
         CHECK(matrix.size_row() == 2);
         CHECK_FALSE(matrix.is_zero());
@@ -289,56 +289,56 @@ TEST_CASE("Matrix Comparison") {
         CHECK(matrix_a == matrix_b);
         CHECK_FALSE(matrix_a != matrix_b);
 
-        matrix_a = mmath::matrix_base<int>{0, 0};
-        matrix_b = mmath::matrix_base<int>{0, 0};
+        matrix_a = mmath::matrix_base<int>{ 0, 0 };
+        matrix_b = mmath::matrix_base<int>{ 0, 0 };
         CHECK(matrix_a == matrix_b);
         CHECK_FALSE(matrix_a != matrix_b);
 
-        matrix_a = mmath::matrix_base<int>{0, 3};
-        matrix_b = mmath::matrix_base<int>{0, 3};
+        matrix_a = mmath::matrix_base<int>{ 0, 3 };
+        matrix_b = mmath::matrix_base<int>{ 0, 3 };
         CHECK(matrix_a == matrix_b);
         CHECK_FALSE(matrix_a != matrix_b);
 
-        matrix_a = mmath::matrix_base<int>{3, 0};
-        matrix_b = mmath::matrix_base<int>{3, 0};
+        matrix_a = mmath::matrix_base<int>{ 3, 0 };
+        matrix_b = mmath::matrix_base<int>{ 3, 0 };
         CHECK(matrix_a == matrix_b);
         CHECK_FALSE(matrix_a != matrix_b);
 
-        matrix_a = mmath::matrix_base<int>{3, 3};
-        matrix_b = mmath::matrix_base<int>{3, 3};
+        matrix_a = mmath::matrix_base<int>{ 3, 3 };
+        matrix_b = mmath::matrix_base<int>{ 3, 3 };
         CHECK(matrix_a == matrix_b);
         CHECK_FALSE(matrix_a != matrix_b);
 
-        matrix_a = mmath::matrix_base<int>{4, 3};
-        matrix_b = mmath::matrix_base<int>{4, 3};
+        matrix_a = mmath::matrix_base<int>{ 4, 3 };
+        matrix_b = mmath::matrix_base<int>{ 4, 3 };
         CHECK(matrix_a == matrix_b);
         CHECK_FALSE(matrix_a != matrix_b);
 
-        matrix_a = mmath::matrix_base<int>{3, 4};
-        matrix_b = mmath::matrix_base<int>{3, 4};
+        matrix_a = mmath::matrix_base<int>{ 3, 4 };
+        matrix_b = mmath::matrix_base<int>{ 3, 4 };
         CHECK(matrix_a == matrix_b);
         CHECK_FALSE(matrix_a != matrix_b);
 
-        matrix_a = mmath::matrix_base<int>{{0, 0, 0},
-                                           {0, 0, 0}};
-        matrix_b = mmath::matrix_base<int>{{0, 0, 0},
-                                           {0, 0, 0}};
+        matrix_a = mmath::matrix_base<int>{{ 0, 0, 0 },
+                                           { 0, 0, 0 }};
+        matrix_b = mmath::matrix_base<int>{{ 0, 0, 0 },
+                                           { 0, 0, 0 }};
         CHECK(matrix_a == matrix_b);
         CHECK_FALSE(matrix_a != matrix_b);
 
-        matrix_a = mmath::matrix_base<int>{{1, 0, 0},
-                                           {0, 1, 0}};
-        matrix_b = mmath::matrix_base<int>{{1, 0, 0},
-                                           {0, 1, 0}};
+        matrix_a = mmath::matrix_base<int>{{ 1, 0, 0 },
+                                           { 0, 1, 0 }};
+        matrix_b = mmath::matrix_base<int>{{ 1, 0, 0 },
+                                           { 0, 1, 0 }};
         CHECK(matrix_a == matrix_b);
         CHECK_FALSE(matrix_a != matrix_b);
 
-        matrix_a = mmath::matrix_base<int>{{5, 6, 7},
-                                           {1, 3, 2},
-                                           {7, 8, 0}};
-        matrix_b = mmath::matrix_base<int>{{5, 6, 7},
-                                           {1, 3, 2},
-                                           {7, 8, 0}};
+        matrix_a = mmath::matrix_base<int>{{ 5, 6, 7 },
+                                           { 1, 3, 2 },
+                                           { 7, 8, 0 }};
+        matrix_b = mmath::matrix_base<int>{{ 5, 6, 7 },
+                                           { 1, 3, 2 },
+                                           { 7, 8, 0 }};
         CHECK(matrix_a == matrix_b);
         CHECK_FALSE(matrix_a != matrix_b);
     }
@@ -359,47 +359,47 @@ TEST_CASE("Matrix Addition") {
         CHECK_THROWS_AS(matrix_a + matrix_b, std::invalid_argument);
         CHECK_THROWS_AS(matrix_b + matrix_a, std::invalid_argument);
 
-        matrix_a = mmath::matrix_base<int>{0, 10};
+        matrix_a = mmath::matrix_base<int>{ 0, 10 };
         matrix_b = mmath::matrix_base<int>{{},
                                            {},
                                            {}};
         CHECK_THROWS_AS(matrix_a + matrix_b, std::invalid_argument);
         CHECK_THROWS_AS(matrix_b + matrix_a, std::invalid_argument);
 
-        matrix_a = mmath::matrix_base<int>{10, 7};
+        matrix_a = mmath::matrix_base<int>{ 10, 7 };
         matrix_b = mmath::matrix_base<int>{};
         CHECK_THROWS_AS(matrix_a + matrix_b, std::invalid_argument);
         CHECK_THROWS_AS(matrix_b + matrix_a, std::invalid_argument);
     }
 
     SECTION("Different Sizes") {
-        mmath::matrix_base<int> matrix_a{{1},
-                                         {2},
-                                         {3}};
-        mmath::matrix_base<int> matrix_b{{1},
-                                         {2}};
+        mmath::matrix_base<int> matrix_a{{ 1 },
+                                         { 2 },
+                                         { 3 }};
+        mmath::matrix_base<int> matrix_b{{ 1 },
+                                         { 2 }};
         CHECK_THROWS_AS(matrix_a + matrix_b, std::domain_error);
         CHECK_THROWS_AS(matrix_b + matrix_a, std::domain_error);
 
-        matrix_a = mmath::matrix_base<int>{{1, 2, 3},
-                                           {3, 5, 3}};
-        matrix_b = mmath::matrix_base<int>{{1, 2},
-                                           {3, 5}};
+        matrix_a = mmath::matrix_base<int>{{ 1, 2, 3 },
+                                           { 3, 5, 3 }};
+        matrix_b = mmath::matrix_base<int>{{ 1, 2 },
+                                           { 3, 5 }};
         CHECK_THROWS_AS(matrix_a + matrix_b, std::domain_error);
         CHECK_THROWS_AS(matrix_b + matrix_a, std::domain_error);
 
-        matrix_a = mmath::matrix_base<int>{{1, 2, 3},
-                                           {3, 5, 3}};
-        matrix_b = mmath::matrix_base<int>{{1, 2}};
+        matrix_a = mmath::matrix_base<int>{{ 1, 2, 3 },
+                                           { 3, 5, 3 }};
+        matrix_b = mmath::matrix_base<int>{{ 1, 2 }};
         CHECK_THROWS_AS(matrix_a + matrix_b, std::domain_error);
         CHECK_THROWS_AS(matrix_b + matrix_a, std::domain_error);
     }
 
     SECTION("Addition Result Validation") {
-        mmath::matrix_base<int> matrix_int_a{{1, 2},
-                                             {3, 4}};
-        mmath::matrix_base<int> matrix_int_b{{1, -2},
-                                             {3, 4}};
+        mmath::matrix_base<int> matrix_int_a{{ 1, 2 },
+                                             { 3, 4 }};
+        mmath::matrix_base<int> matrix_int_b{{ 1, -2 },
+                                             { 3, 4 }};
 
         REQUIRE_NOTHROW(matrix_int_a + matrix_int_b);
         REQUIRE_NOTHROW(matrix_int_b + matrix_int_a);
@@ -419,10 +419,10 @@ TEST_CASE("Matrix Addition") {
 
         using namespace Catch::literals;
 
-        mmath::matrix_base<double> matrix_double_a{{1.15,   -2.25},
-                                                   {3.1415, 4.999}};
-        mmath::matrix_base<double> matrix_double_b{{1.863,   2.75},
-                                                   {3.66666, 4.123}};
+        mmath::matrix_base<double> matrix_double_a{{ 1.15,   -2.25 },
+                                                   { 3.1415, 4.999 }};
+        mmath::matrix_base<double> matrix_double_b{{ 1.863,   2.75 },
+                                                   { 3.66666, 4.123 }};
 
         REQUIRE_NOTHROW(matrix_double_a + matrix_double_b);
         REQUIRE_NOTHROW(matrix_double_b + matrix_double_a);
@@ -457,47 +457,47 @@ TEST_CASE("Matrix Subtraction") {
         CHECK_THROWS_AS(matrix_a - matrix_b, std::invalid_argument);
         CHECK_THROWS_AS(matrix_b - matrix_a, std::invalid_argument);
 
-        matrix_a = mmath::matrix_base<int>{0, 10};
+        matrix_a = mmath::matrix_base<int>{ 0, 10 };
         matrix_b = mmath::matrix_base<int>{{},
                                            {},
                                            {}};
         CHECK_THROWS_AS(matrix_a - matrix_b, std::invalid_argument);
         CHECK_THROWS_AS(matrix_b - matrix_a, std::invalid_argument);
 
-        matrix_a = mmath::matrix_base<int>{10, 7};
+        matrix_a = mmath::matrix_base<int>{ 10, 7 };
         matrix_b = mmath::matrix_base<int>{};
         CHECK_THROWS_AS(matrix_a - matrix_b, std::invalid_argument);
         CHECK_THROWS_AS(matrix_b - matrix_a, std::invalid_argument);
     }
 
     SECTION("Different Sizes") {
-        mmath::matrix_base<int> matrix_a{{1},
-                                         {2},
-                                         {3}};
-        mmath::matrix_base<int> matrix_b{{1},
-                                         {2}};
+        mmath::matrix_base<int> matrix_a{{ 1 },
+                                         { 2 },
+                                         { 3 }};
+        mmath::matrix_base<int> matrix_b{{ 1 },
+                                         { 2 }};
         CHECK_THROWS_AS(matrix_a - matrix_b, std::domain_error);
         CHECK_THROWS_AS(matrix_b - matrix_a, std::domain_error);
 
-        matrix_a = mmath::matrix_base<int>{{1, 2, 3},
-                                           {3, 5, 3}};
-        matrix_b = mmath::matrix_base<int>{{1, 2},
-                                           {3, 5}};
+        matrix_a = mmath::matrix_base<int>{{ 1, 2, 3 },
+                                           { 3, 5, 3 }};
+        matrix_b = mmath::matrix_base<int>{{ 1, 2 },
+                                           { 3, 5 }};
         CHECK_THROWS_AS(matrix_a - matrix_b, std::domain_error);
         CHECK_THROWS_AS(matrix_b - matrix_a, std::domain_error);
 
-        matrix_a = mmath::matrix_base<int>{{1, 2, 3},
-                                           {3, 5, 3}};
-        matrix_b = mmath::matrix_base<int>{{1, 2}};
+        matrix_a = mmath::matrix_base<int>{{ 1, 2, 3 },
+                                           { 3, 5, 3 }};
+        matrix_b = mmath::matrix_base<int>{{ 1, 2 }};
         CHECK_THROWS_AS(matrix_a - matrix_b, std::domain_error);
         CHECK_THROWS_AS(matrix_b - matrix_a, std::domain_error);
     }
 
     SECTION("Subtraction Result Validation") {
-        mmath::matrix_base<int> matrix_int_a{{1, 2},
-                                             {3, 4}};
-        mmath::matrix_base<int> matrix_int_b{{-1, 2},
-                                             {-3, -4}};
+        mmath::matrix_base<int> matrix_int_a{{ 1, 2 },
+                                             { 3, 4 }};
+        mmath::matrix_base<int> matrix_int_b{{ -1, 2 },
+                                             { -3, -4 }};
 
         REQUIRE_NOTHROW(matrix_int_a - matrix_int_b);
         REQUIRE_NOTHROW(matrix_int_b - matrix_int_a);
@@ -517,10 +517,10 @@ TEST_CASE("Matrix Subtraction") {
 
         using namespace Catch::literals;
 
-        mmath::matrix_base<double> matrix_double_a{{1.15,   -2.25},
-                                                   {3.1415, 4.999}};
-        mmath::matrix_base<double> matrix_double_b{{-1.863,   -2.75},
-                                                   {-3.66666, -4.123}};
+        mmath::matrix_base<double> matrix_double_a{{ 1.15,   -2.25 },
+                                                   { 3.1415, 4.999 }};
+        mmath::matrix_base<double> matrix_double_b{{ -1.863,   -2.75 },
+                                                   { -3.66666, -4.123 }};
 
         REQUIRE_NOTHROW(matrix_double_a - matrix_double_b);
         REQUIRE_NOTHROW(matrix_double_b - matrix_double_a);
@@ -573,38 +573,38 @@ TEST_CASE("Matrix Multiplication") {
         CHECK_THROWS_AS(matrix_a * matrix_b, std::invalid_argument);
         CHECK_THROWS_AS(matrix_b * matrix_a, std::invalid_argument);
 
-        matrix_a = mmath::matrix_base<int>{0, 10};
+        matrix_a = mmath::matrix_base<int>{ 0, 10 };
         matrix_b = mmath::matrix_base<int>{{},
                                            {},
                                            {}};
         CHECK_THROWS_AS(matrix_a * matrix_b, std::invalid_argument);
         CHECK_THROWS_AS(matrix_b * matrix_a, std::invalid_argument);
 
-        matrix_a = mmath::matrix_base<int>{10, 7};
+        matrix_a = mmath::matrix_base<int>{ 10, 7 };
         matrix_b = mmath::matrix_base<int>{};
         CHECK_THROWS_AS(matrix_a * matrix_b, std::invalid_argument);
         CHECK_THROWS_AS(matrix_b * matrix_a, std::invalid_argument);
     }
 
     SECTION("Multiplication Size Checks") {
-        mmath::matrix_base<int> matrix_incorrect_a{{32, 1, 60, 2}};
-        mmath::matrix_base<int> matrix_incorrect_b{{32, 1}};
+        mmath::matrix_base<int> matrix_incorrect_a{{ 32, 1, 60, 2 }};
+        mmath::matrix_base<int> matrix_incorrect_b{{ 32, 1 }};
 
         CHECK_THROWS_AS(matrix_incorrect_a * matrix_incorrect_b, std::domain_error);
 
-        mmath::matrix_base<int> matrix_correct_a{{32, 1, 60, 2}};
-        mmath::matrix_base<int> matrix_correct_b{{32},
-                                                 {1},
-                                                 {60},
-                                                 {2}};
+        mmath::matrix_base<int> matrix_correct_a{{ 32, 1, 60, 2 }};
+        mmath::matrix_base<int> matrix_correct_b{{ 32 },
+                                                 { 1 },
+                                                 { 60 },
+                                                 { 2 }};
 
         CHECK_NOTHROW(matrix_correct_a * matrix_correct_b);
     }
 
     SECTION("Constant Multiplication") {
-        mmath::matrix_base<int> matrix_int{{1,  2, 3},
-                                           {4,  5, 6},
-                                           {-2, 1, 0}};
+        mmath::matrix_base<int> matrix_int{{ 1,  2, 3 },
+                                           { 4,  5, 6 },
+                                           { -2, 1, 0 }};
         auto result_int_int1 = 2 * matrix_int;
         auto result_int_int2 = matrix_int * 2;
         auto result_int_double1 = 2.1 * matrix_int;
@@ -642,9 +642,9 @@ TEST_CASE("Matrix Multiplication") {
         compare_matrix_elements(result_int_01, result_int_02, 3, 2, 0);
         compare_matrix_elements(result_int_01, result_int_02, 3, 3, 0);
 
-        mmath::matrix_base<double> matrix_double{{11.14,  2,    3.1415},
-                                                 {4.3333, 5.5,  6.6666},
-                                                 {-2.67,  1.53, 0.1}};
+        mmath::matrix_base<double> matrix_double{{ 11.14,  2,    3.1415 },
+                                                 { 4.3333, 5.5,  6.6666 },
+                                                 { -2.67,  1.53, 0.1 }};
         auto result_double_int1 = 2 * matrix_double;
         auto result_double_int2 = matrix_double * 2;
         auto result_double_double1 = 2.1 * matrix_double;
@@ -684,18 +684,18 @@ TEST_CASE("Matrix Multiplication") {
     }
 
     SECTION("Multiplication Result Validation") {
-        mmath::matrix_base<int> matrix_incorrect_a{{32, 1, 60, 2}};
-        mmath::matrix_base<int> matrix_incorrect_b{{32, 1}};
+        mmath::matrix_base<int> matrix_incorrect_a{{ 32, 1, 60, 2 }};
+        mmath::matrix_base<int> matrix_incorrect_b{{ 32, 1 }};
 
         CHECK_THROWS_AS(matrix_incorrect_a * matrix_incorrect_b, std::domain_error);
 
-        mmath::matrix_base<int> matrix_int_a{{32,  1,  60},
-                                             {2,   -5, 3},
-                                             {-34, 21, 4},
-                                             {43,  21, 19}};
-        mmath::matrix_base<int> matrix_int_b{{-23, 67},
-                                             {5,   3},
-                                             {7,   129}};
+        mmath::matrix_base<int> matrix_int_a{{ 32,  1,  60 },
+                                             { 2,   -5, 3 },
+                                             { -34, 21, 4 },
+                                             { 43,  21, 19 }};
+        mmath::matrix_base<int> matrix_int_b{{ -23, 67 },
+                                             { 5,   3 },
+                                             { 7,   129 }};
 
         REQUIRE_NOTHROW(matrix_int_a * matrix_int_b);
         CHECK_THROWS_AS(matrix_int_b * matrix_int_a, std::domain_error);
@@ -730,20 +730,20 @@ TEST_CASE("Matrix Powers") {
                                            {}};
         CHECK_THROWS_AS(matrix_a ^ 2, std::invalid_argument);
 
-        matrix_a = mmath::matrix_base<int>{0, 10};
+        matrix_a = mmath::matrix_base<int>{ 0, 10 };
         CHECK_THROWS_AS(matrix_a ^ 2, std::invalid_argument);
 
-        matrix_a = mmath::matrix_base<int>{10, 7};
+        matrix_a = mmath::matrix_base<int>{ 10, 7 };
         CHECK_THROWS_AS(matrix_a ^ 2, std::invalid_argument);
 
-        matrix_a = mmath::matrix_base<int>{10, 10};
+        matrix_a = mmath::matrix_base<int>{ 10, 10 };
         CHECK_THROWS_AS(matrix_a ^ -1, std::invalid_argument);
     }
 
     SECTION("Zero Power") {
-        mmath::matrix_base<int> matrix{{1, 2, 3},
-                                       {3, 4, 5},
-                                       {5, 6, 7}};
+        mmath::matrix_base<int> matrix{{ 1, 2, 3 },
+                                       { 3, 4, 5 },
+                                       { 5, 6, 7 }};
 
         CHECK_NOTHROW(matrix ^ 0);
 
@@ -766,9 +766,9 @@ TEST_CASE("Matrix Powers") {
     }
 
     SECTION("First Power") {
-        mmath::matrix_base<int> matrix{{1, 2, 3},
-                                       {3, 4, 5},
-                                       {5, 6, 7}};
+        mmath::matrix_base<int> matrix{{ 1, 2, 3 },
+                                       { 3, 4, 5 },
+                                       { 5, 6, 7 }};
 
         CHECK_NOTHROW(matrix ^ 1);
 
@@ -791,9 +791,9 @@ TEST_CASE("Matrix Powers") {
     }
 
     SECTION("Other Power") {
-        mmath::matrix_base<int> matrix{{1, 2, 3},
-                                       {3, 4, 5},
-                                       {5, 6, 7}};
+        mmath::matrix_base<int> matrix{{ 1, 2, 3 },
+                                       { 3, 4, 5 },
+                                       { 5, 6, 7 }};
 
         CHECK_NOTHROW(matrix ^ 3);
 
@@ -829,18 +829,18 @@ TEST_CASE("Matrix Trace") {
         CHECK_THROWS_AS(mmath::tr(matrix_a), std::invalid_argument);
         CHECK_THROWS_AS(matrix_a.tr(), std::invalid_argument);
 
-        matrix_a = mmath::matrix_base<int>{0, 10};
+        matrix_a = mmath::matrix_base<int>{ 0, 10 };
         CHECK_THROWS_AS(mmath::tr(matrix_a), std::invalid_argument);
         CHECK_THROWS_AS(matrix_a.tr(), std::invalid_argument);
     }
 
     SECTION("Size Checks") {
-        mmath::matrix_base<int> matrix_incorrect_a{{32, 1, 60, 2}};
-        mmath::matrix_base<int> matrix_incorrect_b{{32, 1}};
-        mmath::matrix_base<int> matrix_incorrect_c{{32},
-                                                   {1},
-                                                   {60},
-                                                   {2}};
+        mmath::matrix_base<int> matrix_incorrect_a{{ 32, 1, 60, 2 }};
+        mmath::matrix_base<int> matrix_incorrect_b{{ 32, 1 }};
+        mmath::matrix_base<int> matrix_incorrect_c{{ 32 },
+                                                   { 1 },
+                                                   { 60 },
+                                                   { 2 }};
 
         CHECK_THROWS_AS(mmath::tr(matrix_incorrect_a), std::invalid_argument);
         CHECK_THROWS_AS(mmath::tr(matrix_incorrect_b), std::invalid_argument);
@@ -852,18 +852,18 @@ TEST_CASE("Matrix Trace") {
     }
 
     SECTION("Trace Validation") {
-        mmath::matrix_base<int> matrix_int{{12, 34, 56},
-                                           {32, 51, 2},
-                                           {1,  2,  3}};
+        mmath::matrix_base<int> matrix_int{{ 12, 34, 56 },
+                                           { 32, 51, 2 },
+                                           { 1,  2,  3 }};
 
         REQUIRE_NOTHROW(mmath::tr(matrix_int));
 
         CHECK(mmath::tr(matrix_int) == 66);
         CHECK(matrix_int.tr() == 66);
 
-        mmath::matrix_base<double> matrix_double{{12.12,  34.34,  56.56},
-                                                 {32.12,  51.11,  2.2222},
-                                                 {1.1111, 2.2222, 3.3333}};
+        mmath::matrix_base<double> matrix_double{{ 12.12,  34.34,  56.56 },
+                                                 { 32.12,  51.11,  2.2222 },
+                                                 { 1.1111, 2.2222, 3.3333 }};
 
         REQUIRE_NOTHROW(mmath::tr(matrix_double));
 
@@ -897,13 +897,13 @@ TEMPLATE_TEST_CASE("make_identity_matrix", "[matrix_base][template]", signed cha
 
 TEST_CASE("Matrix Transpose") {
 
-    mmath::matrix_base<int> m{{1, 2, 3},
-                              {4, 5, 6},
-                              {7, 8, 9}};
+    mmath::matrix_base<int> m{{ 1, 2, 3 },
+                              { 4, 5, 6 },
+                              { 7, 8, 9 }};
 
-    mmath::matrix_base<int> n{{1, 4, 7},
-                              {2, 5, 8},
-                              {3, 6, 9}};
+    mmath::matrix_base<int> n{{ 1, 4, 7 },
+                              { 2, 5, 8 },
+                              { 3, 6, 9 }};
 
     auto result1 = m.transpose();
     auto result2 = mmath::transpose(m);
@@ -931,37 +931,45 @@ TEST_CASE("Matrix Transpose") {
 TEST_CASE("Matrix Elementary Operations - Invalid Operations") {
     using namespace mmath;
 
-    mmath::matrix_base<int> m{3, 0};
+    mmath::matrix_base<int> m{ 3, 0 };
     CHECK_THROWS_AS(m | 1_R <=> 2_R, std::invalid_argument);
-    //CHECK_THROWS_AS(m | 1_C <=> 2_, std::invalid_argument);
+    CHECK_THROWS_AS(m | 1_C <=> 2_C, std::invalid_argument);
 
-    m = mmath::matrix_base<int>{{1, 2, 3},
-                                {4, 5, 6},
-                                {7, 8, 9}};
+    m = mmath::matrix_base<int>{{ 1, 2, 3 },
+                                { 4, 5, 6 },
+                                { 7, 8, 9 }};
 
     // Check swapping out of bounds
     CHECK_THROWS_AS(m | 4_R <=> 1_R, std::out_of_range);
+    CHECK_THROWS_AS(m | 4_C <=> 1_C, std::out_of_range);
 
     // Check Sending results to incorrect row
     CHECK_THROWS_AS(m | 2 * 1_R >> 2_R, std::logic_error);
     CHECK_THROWS_AS(m | 2 * 1_R + 2_R >> 1_R, std::logic_error);
     CHECK_THROWS_AS(m | 2_R + 2 * 1_R >> 1_R, std::logic_error);
+    CHECK_THROWS_AS(m | 2 * 1_C >> 2_C, std::logic_error);
+    CHECK_THROWS_AS(m | 2 * 1_C + 2_C >> 1_C, std::logic_error);
+    CHECK_THROWS_AS(m | 2_C + 2 * 1_C >> 1_C, std::logic_error);
 
     // Check multiplying by zero
     CHECK_THROWS_AS(m | 0 * 1_R >> 1_R, std::invalid_argument);
     CHECK_THROWS_AS(m | 0 * 1_R >> 1_R, std::invalid_argument);
     CHECK_THROWS_AS(m | 2_R + 0 * 1_R >> 2_R, std::invalid_argument);
     CHECK_THROWS_AS(m | 0 * 1_R + 2_R >> 2_R, std::invalid_argument);
+    CHECK_THROWS_AS(m | 0 * 1_C >> 1_C, std::invalid_argument);
+    CHECK_THROWS_AS(m | 0 * 1_C >> 1_C, std::invalid_argument);
+    CHECK_THROWS_AS(m | 2_C + 0 * 1_C >> 2_C, std::invalid_argument);
+    CHECK_THROWS_AS(m | 0 * 1_C + 2_C >> 2_C, std::invalid_argument);
 }
 
 TEST_CASE("Matrix Elementary Operations - Swap") {
-    mmath::matrix_base<int> m{{1, 2, 3},
-                              {4, 5, 6},
-                              {7, 8, 9}};
+    mmath::matrix_base<int> m{{ 1, 2, 3 },
+                              { 4, 5, 6 },
+                              { 7, 8, 9 }};
 
-    mmath::matrix_base<int> n{{4, 5, 6},
-                              {1, 2, 3},
-                              {7, 8, 9}};
+    mmath::matrix_base<int> n{{ 4, 5, 6 },
+                              { 1, 2, 3 },
+                              { 7, 8, 9 }};
 
     using namespace mmath;
     auto swapped = m | 1_R <=> 2_R;

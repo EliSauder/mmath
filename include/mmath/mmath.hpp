@@ -134,23 +134,33 @@ namespace mmath {
         // Row operations
     public:
 
-        mmath::matrix_base<T> operator|(matrix_row_switch row) {
+        template<m_eo::matrix_axis_type W>
+        mmath::matrix_base<T> operator|(m_eo::matrix_axis_switch<W> axis) {
             if (this->is_empty()) {
                 throw std::invalid_argument("Elementary operations cannot be performed on an empty matrix.");
             }
 
             matrix_base<T> new_data{this->data, this->num_row, this->num_col};
-            if (row.get_row_from() != 0) {
-                if (row.get_row_from() == row.get_row_to()) return new_data;
+            if (axis.get_axis_from() != 0) {
+                if (axis.get_axis_from() == axis.get_axis_to()) return new_data;
 
-                if (row.get_row_from() > num_row || row.get_row_to() > num_row)
-                    throw std::out_of_range("One of the rows requested lies outside the matrix");
+                size_t bound_to_exceed = axis.get_type() == m_eo::matrix_axis_type::ROW ? num_row : num_col;
 
+                if (axis.get_axis_from() > bound_to_exceed || axis.get_axis_to() > bound_to_exceed)
+                    throw std::out_of_range("One of the axis requested lies outside the matrix");
+
+                size_t loop_bound = axis.get_type() == m_eo::matrix_axis_type::ROW ? num_col : num_row;
                 // Swap Rows
-                for (int i = 1; i <= num_col; ++i) {
-                    T old_value = std::move(new_data(row.get_row_to(), i));
-                    new_data(row.get_row_to(), i) = new_data(row.get_row_from(), i);
-                    new_data(row.get_row_from(), i) = std::move(old_value);
+                for (int i = 1; i <= loop_bound; ++i) {
+                    if (axis.get_type() == m_eo::matrix_axis_type::ROW) {
+                        T old_value = std::move(new_data(axis.get_axis_to(), i));
+                        new_data(axis.get_axis_to(), i) = new_data(axis.get_axis_from(), i);
+                        new_data(axis.get_axis_from(), i) = std::move(old_value);
+                    } else {
+                        T old_value = std::move(new_data(i, axis.get_axis_to()));
+                        new_data(i, axis.get_axis_to()) = new_data(i, axis.get_axis_from());
+                        new_data(i, axis.get_axis_from()) = std::move(old_value);
+                    }
                 }
                 return new_data;
             }
@@ -159,14 +169,14 @@ namespace mmath {
             return new_data;
         }
 
-        template<expression S>
-        mmath::matrix_base<T> operator|(matrix_row_switch_generic<S> row) {
+        template<m_eo::matrix_axis_type W, expression S>
+        mmath::matrix_base<T> operator|(m_eo::matrix_axis_switch_generic<W, S> row) {
             if (this->is_empty()) {
                 throw std::invalid_argument("Elementary operations cannot be performed on an empty matrix.");
             }
 
             matrix_base<T> new_data{this->data, this->num_row, this->num_col};
-            if (row.get_op_row2() == 0) {
+            if (row.get_op_axis2() == 0) {
                 // TODO: Implement Multiply and Replace
                 return new_data;
             }

@@ -11,216 +11,260 @@
 #include "mmath_concepts.hpp"
 
 namespace mmath {
+    namespace m_eo {
 
-    enum class row_operation_type {
-        ADD,
-        SUB,
-        MUL,
-        TRANSFER
-    };
+        enum class matrix_axis_type {
+            ROW,
+            COLUMN
+        };
 
-    /*
-     * CLASSES
-     */
+        /*
+         * CLASSES
+         */
 
-    class matrix_row {
-        size_t row;
-    public:
-        matrix_row(size_t row) : row(row) {};
+        template<matrix_axis_type T>
+        class matrix_axis {
+            size_t axis;
+        public:
+            matrix_axis(size_t axis) : axis(axis) { };
 
-        size_t get_row() {
-            return row;
-        }
-    };
-
-    class matrix_row_added {
-    private:
-        size_t row1;
-        size_t row2;
-    public:
-        size_t get_row1() {
-            return row1;
-        }
-
-        size_t get_row2() {
-            return row2;
-        }
-
-        matrix_row_added(matrix_row a, matrix_row b) : row1(a.get_row()), row2(b.get_row()) {}
-    };
-
-    template<typename S>
-    class matrix_row_multiplied {
-    private:
-        std::optional<S> multiplicand;
-        size_t row;
-    public:
-        matrix_row_multiplied(S a, matrix_row b) : multiplicand(std::move(a)), row(b.get_row()) {
-            if (multiplicand.value() == 0) {
-                throw std::invalid_argument("Elementary multiply operation cannot be by 0.");
+            size_t get_axis() {
+                return axis;
             }
-        }
 
-        S get_multiplicand() {
-            if (multiplicand)
-                return std::move(*multiplicand);
-            throw std::runtime_error("Value has already been accessed");
-        }
-
-        size_t get_row() {
-            return row;
-        }
-    };
-
-    template<typename S>
-    class matrix_row_added_generic {
-    private:
-        matrix_row_multiplied<S> multiply_row;
-        size_t row;
-    public:
-        matrix_row_added_generic(matrix_row_multiplied<S> a, matrix_row b) : multiply_row(std::move(a)),
-                                                                             row(b.get_row()) {
-        }
-
-        size_t get_row() {
-            return row;
-        }
-
-        matrix_row_multiplied<S> get_multiplied_row() {
-            return std::move(multiply_row);
-        }
-    };
-
-    class matrix_row_switch {
-        size_t row_from;
-        size_t row_to;
-        size_t op_row1;
-        size_t op_row2;
-    public:
-        matrix_row_switch(matrix_row row1, matrix_row row2) : row_from(row1.get_row()), row_to(row2.get_row()),
-                                                              op_row1(0),
-                                                              op_row2(0) {
-        }
-
-        matrix_row_switch(matrix_row_added op1, matrix_row op2) : row_from(0), row_to(op2.get_row()),
-                                                                  op_row1(op1.get_row1()), op_row2(op1.get_row2()) {
-            if (op_row1 != row_to && op_row2 != row_to) {
-                throw std::invalid_argument("One of the rows in the addition must be the destination row");
+            matrix_axis_type get_type() {
+                return T;
             }
+        };
+
+        template<matrix_axis_type T>
+        class matrix_axis_added {
+        private:
+            size_t axis1;
+            size_t axis2;
+        public:
+            matrix_axis_added(matrix_axis<T> a, matrix_axis<T> b) : axis1(a.get_axis()), axis2(b.get_axis()) { }
+
+            size_t get_axis1() {
+                return axis1;
+            }
+
+            size_t get_axis2() {
+                return axis2;
+            }
+
+            consteval matrix_axis_type get_type() {
+                return T;
+            }
+        };
+
+        template<matrix_axis_type T, typename S>
+        class matrix_axis_multiplied {
+        private:
+            std::optional<S> multiplicand;
+            size_t axis;
+        public:
+            matrix_axis_multiplied(S a, matrix_axis<T> b) : multiplicand(std::move(a)), axis(b.get_axis()) {
+                if (multiplicand.value() == 0) {
+                    throw std::invalid_argument("Elementary multiply operation cannot be by 0.");
+                }
+            }
+
+            S get_multiplicand() {
+                if (multiplicand)
+                    return std::move(*multiplicand);
+                throw std::runtime_error("Value has already been accessed");
+            }
+
+            size_t get_axis() {
+                return axis;
+            }
+
+            consteval matrix_axis_type get_type() {
+                return T;
+            }
+        };
+
+        template<matrix_axis_type T, typename S>
+        class matrix_axis_added_generic {
+        private:
+            matrix_axis_multiplied<T, S> multiply_axis;
+            size_t axis;
+        public:
+            matrix_axis_added_generic(matrix_axis_multiplied<T, S> a, matrix_axis<T> b) : multiply_axis(std::move(a)),
+                                                                                          axis(b.get_axis()) {
+            }
+
+            size_t get_axis() {
+                return axis;
+            }
+
+            consteval matrix_axis_type get_type() {
+                return T;
+            }
+
+            matrix_axis_multiplied<T, S> get_multiplied_axis() {
+                return std::move(multiply_axis);
+            }
+        };
+
+        template<matrix_axis_type T>
+        class matrix_axis_switch {
+            size_t axis_from;
+            size_t axis_to;
+            size_t op_axis1;
+            size_t op_axis2;
+        public:
+            matrix_axis_switch(matrix_axis<T> axis1, matrix_axis<T> axis2) : axis_from(axis1.get_axis()),
+                                                                             axis_to(axis2.get_axis()),
+                                                                             op_axis1(0),
+                                                                             op_axis2(0) {
+            }
+
+            matrix_axis_switch(matrix_axis_added<T> op1, matrix_axis<T> op2) : axis_from(0), axis_to(op2.get_axis()),
+                                                                               op_axis1(op1.get_axis1()),
+                                                                               op_axis2(op1.get_axis2()) {
+                if (op_axis1 != axis_to && op_axis2 != axis_to) {
+                    throw std::logic_error("One of the rows in the addition must be the destination axis");
+                }
+            }
+
+            size_t get_axis_from() {
+                return axis_from;
+            }
+
+            size_t get_axis_to() {
+                return axis_to;
+            }
+
+            size_t get_op_axis1() {
+                return op_axis1;
+            }
+
+            size_t get_op_axis2() {
+                return op_axis2;
+            }
+
+            consteval matrix_axis_type get_type() {
+                return T;
+            }
+        };
+
+        template<matrix_axis_type T, typename S>
+        class matrix_axis_switch_generic {
+        private:
+            size_t axis_to;
+            size_t op_axis1;
+            size_t op_axis2;
+            S multiplicand;
+        public:
+            matrix_axis_switch_generic(matrix_axis_multiplied<T, S> op1, matrix_axis<T> op2) : axis_to(op2.get_axis()),
+                                                                                               op_axis1(op1.get_axis()),
+                                                                                               op_axis2(0),
+                                                                                               multiplicand(std::move(
+                                                                                                       op1.get_multiplicand())) {
+                if (axis_to != op_axis1)
+                    throw std::logic_error(
+                            "Elementary Multiplication must go in an addition/subtraction or get sent back to source row");
+            }
+
+            matrix_axis_switch_generic(matrix_axis_added_generic<T, S> op1, matrix_axis<T> b) : axis_to(b.get_axis()),
+                                                                                                op_axis1(
+                                                                                                        op1.get_axis()),
+                                                                                                op_axis2(0) {
+                if (axis_to != op_axis1) {
+                    throw std::logic_error("The non-multiplied axis and the destination row must match");
+                }
+                matrix_axis_multiplied<T, S> axis_mul = op1.get_multiplied_axis();
+                op_axis2 = axis_mul.get_axis();
+                multiplicand = std::move(axis_mul.get_multiplicand());
+            }
+
+            size_t get_axis_to() {
+                return axis_to;
+            }
+
+            size_t get_op_axis1() {
+                return op_axis1;
+            }
+
+            size_t get_op_axis2() {
+                return op_axis2;
+            }
+
+            S get_multiplicand() {
+                return std::move(multiplicand);
+            }
+        };
+
+        /*
+         * >> OPERATORS
+         */
+
+        template<matrix_axis_type T>
+        matrix_axis_switch<T> operator<=>(matrix_axis<T> a, matrix_axis<T> b) {
+            return matrix_axis_switch<T>{ a, b };
         }
 
-        size_t get_row_from() {
-            return row_from;
+        template<matrix_axis_type T, typename S>
+        matrix_axis_switch_generic<T, S> operator>>(matrix_axis_multiplied<T, S> a, matrix_axis<T> b) {
+            return matrix_axis_switch_generic<T, S>{ a, b };
         }
 
-        size_t get_row_to() {
-            return row_to;
+        template<matrix_axis_type T>
+        matrix_axis_switch<T> operator>>(matrix_axis_added<T> a, matrix_axis<T> b) {
+            return matrix_axis_switch<T>{ a, b };
         }
 
-        size_t get_op_row1() {
-            return op_row1;
+        template<matrix_axis_type T, typename S>
+        matrix_axis_switch_generic<T, S> operator>>(matrix_axis_added_generic<T, S> a, matrix_axis<T> b) {
+            return matrix_axis_switch_generic<T, S>{ a, b };
         }
 
-        size_t get_op_row2() {
-            return op_row2;
-        }
-    };
+        /*
+         * + OPERATORS
+         */
 
-    template<typename S>
-    class matrix_row_switch_generic {
-    private:
-        size_t row_to;
-        size_t op_row1;
-        size_t op_row2;
-        S multiplicand;
-    public:
-        matrix_row_switch_generic(matrix_row_multiplied<S> op1, matrix_row op2) : row_to(op2.get_row()),
-                                                                                  op_row1(op1.get_row()), op_row2(0),
-                                                                                  multiplicand(std::move(
-                                                                                          op1.get_multiplicand())) {
+        template<matrix_axis_type T>
+        matrix_axis_added<T> operator+(matrix_axis<T> a, matrix_axis<T> b) {
+            return matrix_axis_added<T>{ a, b };
         }
 
-        matrix_row_switch_generic(matrix_row_added_generic<S> op1, matrix_row b) : row_to(b.get_row()),
-                                                                                   op_row1(op1.get_row()), op_row2(0) {
-            matrix_row_multiplied<S> row_mul = op1.get_multiplied_row();
-            op_row2 = row_mul.get_row();
-            multiplicand = std::move(row_mul.get_multiplicand());
+        template<matrix_axis_type T, typename S>
+        matrix_axis_added_generic<T, S> operator+(matrix_axis_multiplied<T, S> a, matrix_axis<T> b) {
+            return matrix_axis_added_generic<T, S>{ a, b };
         }
 
-        size_t get_row_to() {
-            return row_to;
+        template<matrix_axis_type T, typename S>
+        matrix_axis_added_generic<T, S> operator+(matrix_axis<T> a, matrix_axis_multiplied<T, S> b) {
+            return matrix_axis_added_generic<T, S>{ b, a };
         }
 
-        size_t get_op_row1() {
-            return op_row1;
+        /*
+         * * OPERATORS
+         */
+
+        template<matrix_axis_type T, typename S>
+        matrix_axis_multiplied<T, S> operator*(S a, matrix_axis<T> b) {
+            return matrix_axis_multiplied<T, S>{ std::move(a), b };
         }
 
-        size_t get_op_row2() {
-            return op_row2;
-        }
+        /*
+         * LITERALS
+         */
 
-        S get_multiplicand() {
-            return std::move(multiplicand);
-        }
-    };
-
-    /*
-     * >> OPERATORS
-     */
-
-    matrix_row_switch operator<=>(matrix_row a, matrix_row b) {
-        return matrix_row_switch{a, b};
     }
 
-    template<typename S>
-    matrix_row_switch_generic<S> operator>>(matrix_row_multiplied<S> a, matrix_row b) {
-        return matrix_row_switch_generic<S>{a, b};
-    }
-
-    matrix_row_switch operator>>(matrix_row_added a, matrix_row b) {
-        return matrix_row_switch{a, b};
-    }
-
-    template<typename S>
-    matrix_row_switch_generic<S> operator>>(matrix_row_added_generic<S> a, matrix_row b) {
-        return matrix_row_switch_generic<S>{a, b};
-    }
-
-    /*
-     * + OPERATORS
-     */
-
-    matrix_row_added operator+(matrix_row a, matrix_row b) {
-        return matrix_row_added{a, b};
-    }
-
-    template<typename S>
-    matrix_row_added_generic<S> operator+(matrix_row_multiplied<S> a, matrix_row b) {
-        return matrix_row_added_generic<S>{a, b};
-    }
-
-    template<typename S>
-    matrix_row_added_generic<S> operator+(matrix_row a, matrix_row_multiplied<S> b) {
-        return matrix_row_added_generic<S>{b, a};
-    }
-
-    /*
-     * * OPERATORS
-     */
-
-    template<typename S>
-    matrix_row_multiplied<S> operator*(S a, matrix_row b) {
-        return matrix_row_multiplied<S>{std::move(a), b};
-    }
-
-    /*
-     * LITERALS
-     */
+    using matrix_row = m_eo::matrix_axis<m_eo::matrix_axis_type::ROW>;
+    using matrix_column = m_eo::matrix_axis<m_eo::matrix_axis_type::COLUMN>;
 
     matrix_row operator ""_R(unsigned long long t) {
-        return matrix_row{t};
+        return matrix_row{ t };
     }
 
+    matrix_column operator ""_C(unsigned long long t) {
+        return matrix_column{ t };
+    }
 }
 
 #endif //MMATH_MMATH_MATRIXELEMENTARY_HPP
