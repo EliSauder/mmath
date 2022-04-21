@@ -27,29 +27,29 @@ namespace mmath {
 
     protected:
         matrix_base(std::vector<T> data, size_t num_row, size_t num_col) : data(std::move(data)),
-                                                                           num_row(num_row),
-                                                                           num_col(num_col) {
+            num_row(num_row),
+            num_col(num_col) {
             if (this->num_col * this->num_row != this->data.size()) {
                 throw std::invalid_argument("The data provided must match the rows and cols provided.");
             }
         }
 
     public:
-        matrix_base() : num_row(0), num_col(0), data() { };
+        matrix_base() : num_row(0), num_col(0), data() {};
 
-        matrix_base(size_t rows, size_t cols) : num_row(rows), num_col(cols), data(rows * cols, 0) { };
+        matrix_base(size_t rows, size_t cols) : num_row(rows), num_col(cols), data(rows* cols, 0) {};
 
         [[maybe_unused]]
         matrix_base(size_t rows, size_t cols, T default_value) : num_row(rows), num_col(cols),
-                                                                 data(rows * cols, default_value) { };
+            data(rows* cols, default_value) {};
 
         [[maybe_unused]]
         matrix_base(std::initializer_list<std::initializer_list<T>> il) : num_row(il.size()), num_col(0) {
-            for (auto& i: il) num_col = i.size() > num_col ? i.size() : num_col;
+            for (auto& i : il) num_col = i.size() > num_col ? i.size() : num_col;
 
             data.reserve(num_col * num_row);
 
-            for (auto& x: il) {
+            for (auto& x : il) {
                 data.insert(data.end(), x.begin(), x.end());
                 size_t number_missing_col = num_col - x.size();
                 for (int i = 0; i < number_missing_col; ++i) data.insert(data.end(), T{});
@@ -95,7 +95,7 @@ namespace mmath {
         matrix_base<T> operator*(numeric auto b) const {
             if (this->is_empty()) throw std::invalid_argument("Matrices used in multiplication cannot be empty");
             matrix_base<T> result{ this->data, this->num_row, this->num_col };
-            for (T& i: result.data) i = i * b;
+            for (T& i : result.data) i = i * b;
             return result;
         }
 
@@ -146,8 +146,8 @@ namespace mmath {
     private:
         template<expression S>
         void axis_operation(matrix_base<T>& matrix, size_t axis_a, size_t axis_b, size_t axis_result, size_t axis_swap,
-                            bool is_sub, bool mul_is_a, std::optional<S> multiplicand,
-                            m_eo::matrix_axis_type axis_type) {
+            bool is_sub, bool mul_is_a, std::optional<S> multiplicand,
+            m_eo::matrix_axis_type axis_type) {
 
             // If all we have been provided is data for a swap operation, and the swap rows are the same, return
             if (axis_a != 0 && axis_b == 0 && axis_swap != 0 && !multiplicand && axis_a == axis_swap) return;
@@ -183,7 +183,7 @@ namespace mmath {
 
                     // Get the value of b as a multiplied value or just the straight value
                     T value_b = !mul_is_a && multiplicand ? (*multiplicand) * std::move(matrix(axis_b, i, is_column))
-                                                          : matrix(axis_b, i, is_column);
+                        : matrix(axis_b, i, is_column);
 
                     value = is_sub ? std::move(value) - std::move(value_b) : std::move(value) + std::move(value_b);
                 }
@@ -192,37 +192,38 @@ namespace mmath {
                 if (axis_swap != 0) {
                     matrix(axis_result, i, is_column) = std::move(matrix(axis_swap, i, is_column));
                     matrix(axis_swap, i, is_column) = std::move(value);
-                } else {
+                }
+                else {
                     matrix(axis_result, i, is_column) = std::move(value);
                 }
             }
         }
 
-//        void swap_axis(matrix_base<T>& new_data, size_t axis_from, size_t axis_to, m_eo::matrix_axis_type axis_type) {
-//            this->axis_operation<int>(new_data, axis_from, 0, 0, axis_to, false, true, std::nullopt,
-//                                      axis_type);
-//        }
-//
-//        void axis_add(matrix_base<T>& new_data, size_t axis_to, size_t axis_a, size_t axis_b,
-//                      m_eo::matrix_axis_type axis_type, bool is_sub = false) {
-//            this->axis_operation<int>(new_data, axis_a, axis_b, axis_to, 0, is_sub, true, std::nullopt,
-//                                      axis_type);
-//        }
-//
-//        template<expression S>
-//        void axis_multiply(matrix_base<T>& new_data, size_t axis_from, size_t axis_to, S&& multiplicand,
-//                           m_eo::matrix_axis_type axis_type) {
-//            this->axis_operation<S>(new_data, axis_from, 0, axis_to, 0, false, true, multiplicand,
-//                                    axis_type);
-//        }
-//
-//        template<expression S>
-//        void axis_multiply_add(matrix_base<T>& new_data, size_t axis_to, size_t axis_a, size_t axis_b, S&& multiplicand,
-//                               bool mul_a,
-//                               m_eo::matrix_axis_type axis_type, bool is_sub = false) {
-//            this->axis_operation<S>(new_data, axis_a, axis_b, axis_to, 0, is_sub, mul_a, multiplicand,
-//                                    axis_type);
-//        }
+        //        void swap_axis(matrix_base<T>& new_data, size_t axis_from, size_t axis_to, m_eo::matrix_axis_type axis_type) {
+        //            this->axis_operation<int>(new_data, axis_from, 0, 0, axis_to, false, true, std::nullopt,
+        //                                      axis_type);
+        //        }
+        //
+        //        void axis_add(matrix_base<T>& new_data, size_t axis_to, size_t axis_a, size_t axis_b,
+        //                      m_eo::matrix_axis_type axis_type, bool is_sub = false) {
+        //            this->axis_operation<int>(new_data, axis_a, axis_b, axis_to, 0, is_sub, true, std::nullopt,
+        //                                      axis_type);
+        //        }
+        //
+        //        template<expression S>
+        //        void axis_multiply(matrix_base<T>& new_data, size_t axis_from, size_t axis_to, S&& multiplicand,
+        //                           m_eo::matrix_axis_type axis_type) {
+        //            this->axis_operation<S>(new_data, axis_from, 0, axis_to, 0, false, true, multiplicand,
+        //                                    axis_type);
+        //        }
+        //
+        //        template<expression S>
+        //        void axis_multiply_add(matrix_base<T>& new_data, size_t axis_to, size_t axis_a, size_t axis_b, S&& multiplicand,
+        //                               bool mul_a,
+        //                               m_eo::matrix_axis_type axis_type, bool is_sub = false) {
+        //            this->axis_operation<S>(new_data, axis_a, axis_b, axis_to, 0, is_sub, mul_a, multiplicand,
+        //                                    axis_type);
+        //        }
 
     public:
 
@@ -235,9 +236,9 @@ namespace mmath {
             matrix_base<T> new_data{ this->data, this->num_row, this->num_col };
 
             this->axis_operation<int>(new_data, axis.get_op_axis1(), axis.get_op_axis2(),
-                                      axis.get_axis_result(),
-                                      axis.get_axis_swap(), axis.is_sub(), true, std::nullopt,
-                                      axis.get_type());
+                axis.get_axis_result(),
+                axis.get_axis_swap(), axis.is_sub(), true, std::nullopt,
+                axis.get_type());
 
 
             return new_data;
@@ -252,20 +253,20 @@ namespace mmath {
             matrix_base<T> new_data{ this->data, this->num_row, this->num_col };
 
             this->axis_operation<S>(new_data, axis.get_op_axis1(), axis.get_op_axis2(),
-                                    axis.get_axis_result(),
-                                    axis.get_axis_swap(), axis.is_sub(), axis.is_mul_axis1(),
-                                    std::move(axis.get_multiplicand()),
-                                    axis.get_type());
+                axis.get_axis_result(),
+                axis.get_axis_swap(), axis.is_sub(), axis.is_mul_axis1(),
+                std::move(axis.get_multiplicand()),
+                axis.get_type());
 
-//            if (axis.get_op_axis2() == 0) {
-//
-//                axis_multiply(new_data, axis.get_op_axis1(), axis.get_axis_to(), axis.get_multiplicand(),
-//                              axis.get_type());
-//                return new_data;
-//            }
-//
-//            axis_multiply_add(new_data, axis.get_axis_to(), axis.get_op_axis1(), axis.get_op_axis2(),
-//                              axis.get_multiplicand(), axis.is_mul_axis1(), axis.get_type(), axis.is_sub());
+            //            if (axis.get_op_axis2() == 0) {
+            //
+            //                axis_multiply(new_data, axis.get_op_axis1(), axis.get_axis_to(), axis.get_multiplicand(),
+            //                              axis.get_type());
+            //                return new_data;
+            //            }
+            //
+            //            axis_multiply_add(new_data, axis.get_axis_to(), axis.get_op_axis1(), axis.get_op_axis2(),
+            //                              axis.get_multiplicand(), axis.is_mul_axis1(), axis.get_type(), axis.is_sub());
             return new_data;
         }
 
@@ -290,7 +291,7 @@ namespace mmath {
         }
 
         [[maybe_unused]] [[nodiscard]]
-        bool is_identity() const {
+            bool is_identity() const {
             if (!is_square()) return false;
 
             for (int i = 1; i <= num_row; ++i) {
@@ -310,7 +311,7 @@ namespace mmath {
 
         [[nodiscard]]
         bool is_zero() const {
-            for (auto& i: this->data) {
+            for (auto& i : this->data) {
                 if (i != 0) return false;
             }
             return true;
@@ -338,7 +339,8 @@ namespace mmath {
                         return false;
                     }
 
-                } else if (this->data[i] != m.data[i]) {
+                }
+                else if (this->data[i] != m.data[i]) {
                     return false;
                 }
             }
