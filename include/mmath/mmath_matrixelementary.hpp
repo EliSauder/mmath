@@ -26,13 +26,14 @@ namespace mmath {
         class matrix_axis {
             size_t axis;
         public:
-            matrix_axis(size_t axis) : axis(axis) { };
+            [[maybe_unused]]
+            explicit matrix_axis(size_t axis) : axis(axis) { };
 
             size_t get_axis() {
                 return axis;
             }
 
-            matrix_axis_type get_type() {
+            [[maybe_unused]] matrix_axis_type get_type() {
                 return T;
             }
         };
@@ -63,7 +64,7 @@ namespace mmath {
                 return _is_sub;
             }
 
-            consteval matrix_axis_type get_type() {
+            [[maybe_unused]] consteval matrix_axis_type get_type() {
                 return T;
             }
         };
@@ -90,7 +91,7 @@ namespace mmath {
                 return axis;
             }
 
-            consteval matrix_axis_type get_type() {
+            [[maybe_unused]] consteval matrix_axis_type get_type() {
                 return T;
             }
         };
@@ -134,7 +135,7 @@ namespace mmath {
                 return mul_axis_is_a;
             }
 
-            consteval matrix_axis_type get_type() {
+            [[maybe_unused]] consteval matrix_axis_type get_type() {
                 return T;
             }
 
