@@ -90,13 +90,24 @@ namespace mmath {
         private:
             matrix_axis_multiplied<T, S> multiply_axis;
             size_t axis;
+            bool mul_axis_is_a;
         public:
-            matrix_axis_added_generic(matrix_axis_multiplied<T, S> a, matrix_axis<T> b) : multiply_axis(std::move(a)),
-                                                                                          axis(b.get_axis()) {
+            matrix_axis_added_generic(matrix_axis_multiplied<T, S> a, matrix_axis <T> b) : multiply_axis(std::move(a)),
+                                                                                           axis(b.get_axis()),
+                                                                                           mul_axis_is_a(true) {
+            }
+
+            matrix_axis_added_generic(matrix_axis <T> a, matrix_axis_multiplied<T, S> b) : multiply_axis(std::move(a)),
+                                                                                           axis(b.get_axis()),
+                                                                                           mul_axis_is_a(false) {
             }
 
             size_t get_axis() {
                 return axis;
+            }
+
+            bool get_is_mul_axis_a() {
+                return mul_axis_is_a;
             }
 
             consteval matrix_axis_type get_type() {
@@ -156,13 +167,15 @@ namespace mmath {
             size_t axis_to;
             size_t op_axis1;
             size_t op_axis2;
+            bool mul_axis_is_1;
             S multiplicand;
         public:
             matrix_axis_switch_generic(matrix_axis_multiplied<T, S> op1, matrix_axis<T> op2) : axis_to(op2.get_axis()),
                                                                                                op_axis1(op1.get_axis()),
                                                                                                op_axis2(0),
                                                                                                multiplicand(std::move(
-                                                                                                       op1.get_multiplicand())) {
+                                                                                                       op1.get_multiplicand())),
+                                                                                               mul_axis_is_1(false) {
                 if (axis_to != op_axis1)
                     throw std::logic_error(
                             "Elementary Multiplication must go in an addition/subtraction or get sent back to source row");
@@ -171,10 +184,12 @@ namespace mmath {
             matrix_axis_switch_generic(matrix_axis_added_generic<T, S> op1, matrix_axis<T> b) : axis_to(b.get_axis()),
                                                                                                 op_axis1(
                                                                                                         op1.get_axis()),
-                                                                                                op_axis2(0) {
-                if (axis_to != op_axis1) {
+                                                                                                op_axis2(0),
+                                                                                                mul_axis_is_1(
+                                                                                                        op1.get_is_mul_axis_a()) {
+                if (axis_to != op_axis1)
                     throw std::logic_error("The non-multiplied axis and the destination row must match");
-                }
+
                 matrix_axis_multiplied<T, S> axis_mul = op1.get_multiplied_axis();
                 op_axis2 = axis_mul.get_axis();
                 multiplicand = std::move(axis_mul.get_multiplicand());
@@ -195,6 +210,14 @@ namespace mmath {
             S get_multiplicand() {
                 return std::move(multiplicand);
             }
+
+            bool is_mul_axis1() {
+                return mul_axis_is_1;
+            }
+
+            consteval matrix_axis_type get_type() {
+                return T;
+            }
         };
 
         /*
@@ -208,7 +231,7 @@ namespace mmath {
 
         template<matrix_axis_type T, typename S>
         matrix_axis_switch_generic<T, S> operator>>(matrix_axis_multiplied<T, S> a, matrix_axis<T> b) {
-            return matrix_axis_switch_generic<T, S>{ a, b };
+            return matrix_axis_switch_generic < T, S > { a, b };
         }
 
         template<matrix_axis_type T>
@@ -218,7 +241,7 @@ namespace mmath {
 
         template<matrix_axis_type T, typename S>
         matrix_axis_switch_generic<T, S> operator>>(matrix_axis_added_generic<T, S> a, matrix_axis<T> b) {
-            return matrix_axis_switch_generic<T, S>{ a, b };
+            return matrix_axis_switch_generic < T, S > { a, b };
         }
 
         /*

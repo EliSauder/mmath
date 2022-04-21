@@ -69,6 +69,17 @@ namespace mmath {
             return data[(num_col * (row - 1)) + (column - 1)];
         }
 
+    protected:
+        T operator()(size_t row, size_t column, bool invert) const {
+            return invert ? (*this)(column, row) : (*this)(row, column);
+        }
+
+        T& operator()(size_t row, size_t column, bool invert) {
+            return invert ? (*this)(column, row) : (*this)(row, column);
+        }
+
+    public:
+
         matrix_base<T> operator+(const matrix_base<T>& b) const {
             if (this->is_empty() || b.is_empty())
                 throw std::invalid_argument("Matrices used in addition cannot be empty");
@@ -132,6 +143,109 @@ namespace mmath {
         }
 
         // Row operations
+    private:
+        void swap_axis(matrix_base<T>& new_data, size_t axis_from, size_t axis_to, m_eo::matrix_axis_type axis_type) {
+            if (axis_to == axis_from) return;
+
+            bool is_column = axis_type == m_eo::matrix_axis_type::COLUMN;
+
+            size_t bound_to_exceed = is_column ? num_col : num_row;
+
+            if (axis_from > bound_to_exceed || axis_to > bound_to_exceed)
+                throw std::out_of_range("One of the axis requested lies outside the matrix");
+
+            size_t loop_bound = is_column ? num_row : num_col;
+
+            for (int i = 1; i <= loop_bound; ++i) {
+                T old_value = std::move(new_data(axis_to, i, is_column));
+                new_data(axis_to, i, is_column) = new_data(axis_from, i, is_column);
+                new_data(axis_from, i, is_column) = std::move(old_value);
+            }
+        }
+
+        void axis_add(matrix_base<T>& new_data, size_t axis_to, size_t axis_a, size_t axis_b,
+                      m_eo::matrix_axis_type axis_type, bool is_sub = false) {
+
+
+            bool is_column = axis_type == m_eo::matrix_axis_type::COLUMN;
+
+            size_t bound_to_exceed = is_column ? num_col : num_row;
+
+            // axis_to doesn't need to be checked as it is equal to either a or b
+            if (axis_b > bound_to_exceed || axis_a > bound_to_exceed)
+                throw std::out_of_range("One of the axis requested lies outside the matrix");
+
+            size_t loop_bound = is_column ? num_row : num_col;
+
+            for (int i = 1; i <= loop_bound; ++i) {
+                new_data(axis_to, i, is_column) = is_sub ? new_data(axis_a, i, is_column) -
+                                                           new_data(axis_b, i, is_column) :
+                                                  new_data(axis_a, i, is_column) +
+                                                  new_data(axis_b, i, is_column);
+
+            }
+        }
+
+        template<expression S>
+        void axis_multiply(matrix_base<T>& new_data, size_t axis_from, size_t axis_to, S&& multiplicand,
+                           m_eo::matrix_axis_type axis_type) {
+            if (multiplicand == 1) return;
+
+            bool is_column = axis_type == m_eo::matrix_axis_type::COLUMN;
+
+            size_t bound_to_exceed = is_column ? num_col : num_row;
+
+            // axis_to doesn't need to be checked as it is equal to either a or b
+            if (axis_to > bound_to_exceed)
+                throw std::out_of_range("One of the axis requested lies outside the matrix");
+
+            size_t loop_bound = is_column ? num_row : num_col;
+
+            for (int i = 1; i <= loop_bound; ++i) {
+                new_data(axis_to, i, is_column) = new_data(axis_from, i, is_column) * multiplicand;
+            }
+        }
+
+        template<expression S>
+        void axis_multiply_add(matrix_base<T>& new_data, size_t axis_to, size_t axis_a, size_t axis_b, S&& multiplicand,
+                               bool mul_a,
+                               m_eo::matrix_axis_type axis_type, bool is_sub = false) {
+
+
+            bool is_column = axis_type == m_eo::matrix_axis_type::COLUMN;
+
+            size_t bound_to_exceed = is_column ? num_col : num_row;
+
+            // axis_to doesn't need to be checked as it is equal to either a or b
+            if (axis_b > bound_to_exceed || axis_a > bound_to_exceed)
+                throw std::out_of_range("One of the axis requested lies outside the matrix");
+
+            size_t loop_bound = is_column ? num_row : num_col;
+
+            for (int i = 1; i <= loop_bound; ++i) {
+
+                if (is_sub) {
+                    if (mul_a) {
+                        new_data(axis_to, i, is_column) =
+                                (multiplicand * new_data(axis_a, i, is_column)) - new_data(axis_b, i, is_column);
+                        continue;
+                    }
+                    new_data(axis_to, i, is_column) =
+                            new_data(axis_a, i, is_column) - (multiplicand * new_data(axis_b, i, is_column));
+                    continue;
+                }
+
+                if (mul_a) {
+                    new_data(axis_to, i, is_column) =
+                            (multiplicand * new_data(axis_a, i, is_column)) + new_data(axis_b, i, is_column);
+                    continue;
+                }
+
+                new_data(axis_to, i, is_column) =
+                        new_data(axis_a, i, is_column) + (multiplicand * new_data(axis_b, i, is_column));
+            }
+        }
+
     public:
 
         template<m_eo::matrix_axis_type W>
@@ -142,45 +256,31 @@ namespace mmath {
 
             matrix_base<T> new_data{this->data, this->num_row, this->num_col};
             if (axis.get_axis_from() != 0) {
-                if (axis.get_axis_from() == axis.get_axis_to()) return new_data;
-
-                size_t bound_to_exceed = axis.get_type() == m_eo::matrix_axis_type::ROW ? num_row : num_col;
-
-                if (axis.get_axis_from() > bound_to_exceed || axis.get_axis_to() > bound_to_exceed)
-                    throw std::out_of_range("One of the axis requested lies outside the matrix");
-
-                size_t loop_bound = axis.get_type() == m_eo::matrix_axis_type::ROW ? num_col : num_row;
-                // Swap Rows
-                for (int i = 1; i <= loop_bound; ++i) {
-                    if (axis.get_type() == m_eo::matrix_axis_type::ROW) {
-                        T old_value = std::move(new_data(axis.get_axis_to(), i));
-                        new_data(axis.get_axis_to(), i) = new_data(axis.get_axis_from(), i);
-                        new_data(axis.get_axis_from(), i) = std::move(old_value);
-                    } else {
-                        T old_value = std::move(new_data(i, axis.get_axis_to()));
-                        new_data(i, axis.get_axis_to()) = new_data(i, axis.get_axis_from());
-                        new_data(i, axis.get_axis_from()) = std::move(old_value);
-                    }
-                }
+                this->swap_axis(new_data, axis.get_axis_from(), axis.get_axis_to(), axis.get_type());
                 return new_data;
             }
 
-            // TODO: Implement Row Addition and Replace
+            axis_add(new_data, axis.get_axis_to(), axis.get_op_axis1(), axis.get_op_axis2(), axis.get_type());
+
             return new_data;
         }
 
         template<m_eo::matrix_axis_type W, expression S>
-        mmath::matrix_base<T> operator|(m_eo::matrix_axis_switch_generic<W, S> row) {
+        mmath::matrix_base<T> operator|(m_eo::matrix_axis_switch_generic<W, S> axis) {
             if (this->is_empty()) {
                 throw std::invalid_argument("Elementary operations cannot be performed on an empty matrix.");
             }
 
             matrix_base<T> new_data{this->data, this->num_row, this->num_col};
-            if (row.get_op_axis2() == 0) {
-                // TODO: Implement Multiply and Replace
+            if (axis.get_op_axis2() == 0) {
+
+                axis_multiply(new_data, axis.get_op_axis1(), axis.get_axis_to(), axis.get_multiplicand(),
+                              axis.get_type());
                 return new_data;
             }
-            // TODO: Implement Multiply, then add and replace
+
+            axis_multiply_add(new_data, axis.get_axis_to(), axis.get_op_axis1(), axis.get_op_axis2(),
+                              axis.get_multiplicand(), axis.is_mul_axis1(), axis.get_type());
             return new_data;
         }
 
