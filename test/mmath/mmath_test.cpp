@@ -941,7 +941,29 @@ TEST_CASE("Matrix Elementary Operations - Invalid Operations") {
 
     // Check swapping out of bounds
     CHECK_THROWS_AS(m | 4_R <=> 1_R, std::out_of_range);
+    CHECK_THROWS_AS(m | 1_R <=> 4_R, std::out_of_range);
     CHECK_THROWS_AS(m | 4_C <=> 1_C, std::out_of_range);
+    CHECK_THROWS_AS(m | 1_C <=> 4_C, std::out_of_range);
+
+    CHECK_THROWS_AS(m | 2 * 4_R >> 4_R, std::out_of_range);
+    CHECK_THROWS_AS(m | 2 * 4_R + 1_R >> 1_R, std::out_of_range);
+    CHECK_THROWS_AS(m | 2 * 1_R + 4_R >> 4_R, std::out_of_range);
+    CHECK_THROWS_AS(m | 2_R + 2 * 4_R >> 2_R, std::out_of_range);
+    CHECK_THROWS_AS(m | 4_R + 2 * 1_R >> 4_R, std::out_of_range);
+    CHECK_THROWS_AS(m | 2 * 4_R - 1_R >> 1_R, std::out_of_range);
+    CHECK_THROWS_AS(m | 2 * 1_R - 4_R >> 4_R, std::out_of_range);
+    CHECK_THROWS_AS(m | 2_R - 2 * 4_R >> 2_R, std::out_of_range);
+    CHECK_THROWS_AS(m | 4_R - 2 * 1_R >> 4_R, std::out_of_range);
+
+    CHECK_THROWS_AS(m | 2 * 4_C >> 4_C, std::out_of_range);
+    CHECK_THROWS_AS(m | 2 * 4_C + 1_C >> 1_C, std::out_of_range);
+    CHECK_THROWS_AS(m | 2 * 1_C + 4_C >> 4_C, std::out_of_range);
+    CHECK_THROWS_AS(m | 2_C + 2 * 4_C >> 2_C, std::out_of_range);
+    CHECK_THROWS_AS(m | 4_C + 2 * 1_C >> 4_C, std::out_of_range);
+    CHECK_THROWS_AS(m | 2 * 4_C - 1_C >> 1_C, std::out_of_range);
+    CHECK_THROWS_AS(m | 2 * 1_C - 4_C >> 4_C, std::out_of_range);
+    CHECK_THROWS_AS(m | 2_C - 2 * 4_C >> 2_C, std::out_of_range);
+    CHECK_THROWS_AS(m | 4_C - 2 * 1_C >> 4_C, std::out_of_range);
 
     // Check Sending results to incorrect row
     CHECK_THROWS_AS(m | 2 * 1_R >> 2_R, std::logic_error);
@@ -950,16 +972,25 @@ TEST_CASE("Matrix Elementary Operations - Invalid Operations") {
     CHECK_THROWS_AS(m | 2 * 1_C >> 2_C, std::logic_error);
     CHECK_THROWS_AS(m | 2 * 1_C + 2_C >> 1_C, std::logic_error);
     CHECK_THROWS_AS(m | 2_C + 2 * 1_C >> 1_C, std::logic_error);
+    CHECK_THROWS_AS(m | 2 * 1_R - 2_R >> 1_R, std::logic_error);
+    CHECK_THROWS_AS(m | 2_R - 2 * 1_R >> 1_R, std::logic_error);
+    CHECK_THROWS_AS(m | 2 * 1_C - 2_C >> 1_C, std::logic_error);
+    CHECK_THROWS_AS(m | 2_C - 2 * 1_C >> 1_C, std::logic_error);
+
 
     // Check multiplying by zero
     CHECK_THROWS_AS(m | 0 * 1_R >> 1_R, std::invalid_argument);
-    CHECK_THROWS_AS(m | 0 * 1_R >> 1_R, std::invalid_argument);
+    CHECK_THROWS_AS(m | 1_R * 0 >> 1_R, std::invalid_argument);
     CHECK_THROWS_AS(m | 2_R + 0 * 1_R >> 2_R, std::invalid_argument);
     CHECK_THROWS_AS(m | 0 * 1_R + 2_R >> 2_R, std::invalid_argument);
-    CHECK_THROWS_AS(m | 0 * 1_C >> 1_C, std::invalid_argument);
+    CHECK_THROWS_AS(m | 1_C * 0 >> 1_C, std::invalid_argument);
     CHECK_THROWS_AS(m | 0 * 1_C >> 1_C, std::invalid_argument);
     CHECK_THROWS_AS(m | 2_C + 0 * 1_C >> 2_C, std::invalid_argument);
     CHECK_THROWS_AS(m | 0 * 1_C + 2_C >> 2_C, std::invalid_argument);
+    CHECK_THROWS_AS(m | 2_R - 0 * 1_R >> 2_R, std::invalid_argument);
+    CHECK_THROWS_AS(m | 0 * 1_R - 2_R >> 2_R, std::invalid_argument);
+    CHECK_THROWS_AS(m | 2_C - 0 * 1_C >> 2_C, std::invalid_argument);
+    CHECK_THROWS_AS(m | 0 * 1_C - 2_C >> 2_C, std::invalid_argument);
 }
 
 TEST_CASE("Matrix Elementary Operations - Swap") {
@@ -971,8 +1002,120 @@ TEST_CASE("Matrix Elementary Operations - Swap") {
                               { 1, 2, 3 },
                               { 7, 8, 9 }};
 
+    mmath::matrix_base<int> o{{ 2, 1, 3 },
+                              { 5, 4, 6 },
+                              { 8, 7, 9 }};
+
     using namespace mmath;
     auto swapped = m | 1_R <=> 2_R;
     CHECK(swapped == n);
-    CHECK(swapped != m);
+    swapped = m | 2_R <=> 1_R;
+    CHECK(swapped == n);
+
+    auto swapped_C = m | 1_C <=> 2_C;
+    CHECK(swapped_C == o);
+    swapped_C = m | 2_C <=> 1_C;
+    CHECK(swapped_C == o);
+}
+
+TEST_CASE("Matrix Elementary Operations - Multiply") {
+    mmath::matrix_base<int> m{{ 1, 2, 3 },
+                              { 4, 5, 6 },
+                              { 7, 8, 9 }};
+
+    mmath::matrix_base<int> result_R{{ 2, 4, 6 },
+                                     { 4, 5, 6 },
+                                     { 7, 8, 9 }};
+
+    mmath::matrix_base<int> result_C{{ 2,  2, 3 },
+                                     { 8,  5, 6 },
+                                     { 14, 8, 9 }};
+
+    using namespace mmath;
+    auto multiplied = m | 2 * 1_R >> 1_R;
+    CHECK(multiplied == result_R);
+
+    multiplied = m | 1_R * 2 >> 1_R;
+    CHECK(multiplied == result_R);
+
+    auto multiplied_C = m | 2 * 1_C >> 1_C;
+    CHECK(multiplied_C == result_C);
+
+    multiplied_C = m | 1_C * 2 >> 1_C;
+    CHECK(multiplied_C == result_C);
+}
+
+TEST_CASE("Matrix Elementary Operations - Add/Sub") {
+    mmath::matrix_base<int> m{{ 1, 2, 3 },
+                              { 4, 5, 6 },
+                              { 7, 8, 9 }};
+
+    mmath::matrix_base<int> result_r_add{{ 1, 2, 3 },
+                                         { 5, 7, 9 },
+                                         { 7, 8, 9 }};
+    mmath::matrix_base<int> result_r_sub{{ 1, 2, 3 },
+                                         { 3, 3, 3 },
+                                         { 7, 8, 9 }};
+
+    mmath::matrix_base<int> result_c_add{{ 1, 3,  3 },
+                                         { 4, 9,  6 },
+                                         { 7, 15, 9 }};
+    mmath::matrix_base<int> result_c_sub{{ 1, 1, 3 },
+                                         { 4, 1, 6 },
+                                         { 7, 1, 9 }};
+
+    using namespace mmath;
+    auto add_r = m | 1_R + 2_R >> 2_R;
+    auto sub_r = m | 2_R - 1_R >> 2_R;
+
+    auto add_c = m | 1_C + 2_C >> 2_C;
+    auto sub_c = m | 2_C - 1_C >> 2_C;
+
+    CHECK(add_r == result_r_add);
+    CHECK(sub_r == result_r_sub);
+    CHECK(add_c == result_c_add);
+    CHECK(sub_c == result_c_sub);
+}
+
+TEST_CASE("Matrix Elementary Operations - Multiply Add/Sub") {
+    mmath::matrix_base<int> m{{ 1, 2, 3 },
+                              { 4, 5, 6 },
+                              { 7, 8, 9 }};
+
+    mmath::matrix_base<int> result_r_add{{ 1, 2,  3 },
+                                         { 7, 11, 15 },
+                                         { 7, 8,  9 }};
+    mmath::matrix_base<int> result_r_sub{{ 1, 2,  3 },
+                                         { 1, -1, -3 },
+                                         { 7, 8,  9 }};
+
+    mmath::matrix_base<int> result_c_add{{ 1, 4,  3 },
+                                         { 4, 13, 6 },
+                                         { 7, 22, 9 }};
+    mmath::matrix_base<int> result_c_sub{{ 1, 0,  3 },
+                                         { 4, -3, 6 },
+                                         { 7, -6, 9 }};
+
+    using namespace mmath;
+    auto add_r = m | 3 * 1_R + 2_R >> 2_R;
+    auto sub_r = m | 2_R - 3 * 1_R >> 2_R;
+
+    auto add_c = m | 2 * 1_C + 2_C >> 2_C;
+    auto sub_c = m | 2_C - 2 * 1_C >> 2_C;
+
+    CHECK(add_r == result_r_add);
+    CHECK(sub_r == result_r_sub);
+    CHECK(add_c == result_c_add);
+    CHECK(sub_c == result_c_sub);
+
+    add_r = m | 1_R * 3 + 2_R >> 2_R;
+    sub_r = m | 2_R - 1_R * 3 >> 2_R;
+
+    add_c = m | 1_C * 2 + 2_C >> 2_C;
+    sub_c = m | 2_C - 1_C * 2 >> 2_C;
+
+    CHECK(add_r == result_r_add);
+    CHECK(sub_r == result_r_sub);
+    CHECK(add_c == result_c_add);
+    CHECK(sub_c == result_c_sub);
 }

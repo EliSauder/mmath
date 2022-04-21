@@ -260,7 +260,8 @@ namespace mmath {
                 return new_data;
             }
 
-            axis_add(new_data, axis.get_axis_to(), axis.get_op_axis1(), axis.get_op_axis2(), axis.get_type());
+            axis_add(new_data, axis.get_axis_to(), axis.get_op_axis1(), axis.get_op_axis2(), axis.get_type(),
+                     axis.is_sub());
 
             return new_data;
         }
@@ -280,7 +281,7 @@ namespace mmath {
             }
 
             axis_multiply_add(new_data, axis.get_axis_to(), axis.get_op_axis1(), axis.get_op_axis2(),
-                              axis.get_multiplicand(), axis.is_mul_axis1(), axis.get_type());
+                              axis.get_multiplicand(), axis.is_mul_axis1(), axis.get_type(), axis.is_sub());
             return new_data;
         }
 
@@ -378,14 +379,6 @@ namespace mmath {
             return matrix_base<T>{std::move(new_data), num_row, num_col};
         }
     };
-
-    void test() {
-        matrix_base<int> m{};
-        m | 2_R + 2 * 3_R >> 2_R;
-        m | 2_R + 3_R >> 2_R;
-        m | 3_R <=> 2_R;
-        m | 2 * 3_R >> 2_R;
-    }
 
     template<expression T>
     matrix_base<T> operator*(numeric auto a, const matrix_base<T>& b) {
