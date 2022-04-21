@@ -17,6 +17,7 @@ namespace mmath {
                               std::default_initializable<T> &&
                               std::copyable<T> && requires(T a) {
         { a * a } -> std::convertible_to<T>;
+        { a / a } -> std::convertible_to<T>;
         { a + a } -> std::convertible_to<T>;
         { a - a } -> std::convertible_to<T>;
         { a == a } -> std::convertible_to<bool>;
@@ -24,6 +25,7 @@ namespace mmath {
     } && requires(T a, S b) {
         { a * b } -> std::convertible_to<T>;
         { b * a } -> std::convertible_to<T>;
+        { a / b } -> std::convertible_to<T>;
         { a + b } -> std::convertible_to<T>;
         { b + a } -> std::convertible_to<T>;
         { b == a } -> std::convertible_to<bool>;

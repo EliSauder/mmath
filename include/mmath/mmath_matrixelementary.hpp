@@ -146,33 +146,36 @@ namespace mmath {
 
         template<matrix_axis_type T>
         class matrix_axis_switch {
-            size_t axis_from;
-            size_t axis_to;
             size_t op_axis1;
             size_t op_axis2;
+            size_t axis_result;
+            size_t axis_swap;
             bool _is_sub = false;
         public:
-            matrix_axis_switch(matrix_axis<T> axis1, matrix_axis<T> axis2) : axis_from(axis1.get_axis()),
-                                                                             axis_to(axis2.get_axis()),
-                                                                             op_axis1(0),
-                                                                             op_axis2(0) {
+            matrix_axis_switch(matrix_axis<T> axis1, matrix_axis<T> axis2) : op_axis1(axis1.get_axis()),
+                                                                             op_axis2(0),
+                                                                             axis_swap(axis2.get_axis()),
+                                                                             axis_result(0) {
             }
 
-            matrix_axis_switch(matrix_axis_added<T> op1, matrix_axis<T> op2) : axis_from(0), axis_to(op2.get_axis()),
-                                                                               op_axis1(op1.get_axis1()),
+            matrix_axis_switch(matrix_axis_added<T> op1, matrix_axis<T> op2) : op_axis1(op1.get_axis1()),
                                                                                op_axis2(op1.get_axis2()),
+                                                                               axis_result(op2.get_axis()),
+                                                                               axis_swap(0),
                                                                                _is_sub(op1.is_sub()) {
-                if (op_axis1 != axis_to && op_axis2 != axis_to) {
+                if (op_axis1 != axis_result && op_axis2 != axis_result) {
                     throw std::logic_error("One of the rows in the addition must be the destination axis");
                 }
             }
 
-            size_t get_axis_from() {
-                return axis_from;
-            }
-
-            size_t get_axis_to() {
-                return axis_to;
+            matrix_axis_switch(matrix_axis_switch<T> op1, matrix_axis<T> op2) : op_axis1(op1.op_axis1),
+                                                                                op_axis2(op1.op_axis2),
+                                                                                axis_result(op1.axis_result),
+                                                                                axis_swap(op2.get_axis()),
+                                                                                _is_sub(op1._is_sub) {
+                if (op1.get_axis_swap() != 0) {
+                    throw std::logic_error("Multiple swap operations not supported");
+                }
             }
 
             size_t get_op_axis1() {
@@ -181,6 +184,14 @@ namespace mmath {
 
             size_t get_op_axis2() {
                 return op_axis2;
+            }
+
+            size_t get_axis_result() {
+                return axis_result;
+            }
+
+            size_t get_axis_swap() {
+                return axis_swap;
             }
 
             bool is_sub() {
@@ -195,25 +206,31 @@ namespace mmath {
         template<matrix_axis_type T, typename S>
         class matrix_axis_switch_generic {
         private:
-            size_t axis_to;
             size_t op_axis1;
             size_t op_axis2;
+            size_t axis_result;
+            size_t axis_swap;
             bool mul_axis_is_1;
             S multiplicand;
             bool _is_sub = false;
         public:
-            matrix_axis_switch_generic(matrix_axis_multiplied<T, S> op1, matrix_axis<T> op2) : axis_to(op2.get_axis()),
-                                                                                               op_axis1(op1.get_axis()),
+            matrix_axis_switch_generic(matrix_axis_multiplied<T, S> op1, matrix_axis<T> op2) : op_axis1(
+                    op1.get_axis()),
                                                                                                op_axis2(0),
+                                                                                               axis_result(
+                                                                                                       op2.get_axis()),
+                                                                                               axis_swap(0),
                                                                                                multiplicand(std::move(
                                                                                                        op1.get_multiplicand())),
-                                                                                               mul_axis_is_1(false) {
-                if (axis_to != op_axis1)
+                                                                                               mul_axis_is_1(true) {
+                if (axis_result != op_axis1)
                     throw std::logic_error(
                             "Elementary Multiplication must go in an addition/subtraction or get sent back to source row");
             }
 
-            matrix_axis_switch_generic(matrix_axis_added_generic<T, S> op1, matrix_axis<T> b) : axis_to(b.get_axis()),
+            matrix_axis_switch_generic(matrix_axis_added_generic<T, S> op1, matrix_axis<T> b) : axis_result(
+                    b.get_axis()),
+                                                                                                axis_swap(0),
                                                                                                 mul_axis_is_1(
                                                                                                         op1.get_is_mul_axis_a()),
                                                                                                 _is_sub(op1.is_sub()) {
@@ -229,12 +246,29 @@ namespace mmath {
                     op_axis2 = op1.get_axis();
                 }
 
-                if (axis_to != (op1.is_axis_a() ? op_axis1 : op_axis2))
+                if (axis_result != (op1.is_axis_a() ? op_axis1 : op_axis2))
                     throw std::logic_error("The non-multiplied axis and the destination row must match");
             }
 
-            size_t get_axis_to() {
-                return axis_to;
+            matrix_axis_switch_generic(matrix_axis_switch_generic<T, S> op1, matrix_axis<T> b) : op_axis1(
+                    op1.op_axis1), op_axis2(op1.op_axis2), axis_result(op1.axis_result), axis_swap(b.get_axis()),
+                                                                                                 _is_sub(op1.is_sub()),
+                                                                                                 mul_axis_is_1(
+                                                                                                         op1.mul_axis_is_1),
+                                                                                                 multiplicand(
+                                                                                                         std::move(
+                                                                                                                 op1.multiplicand)) {
+                if (op1.get_axis_swap() != 0) {
+                    throw std::logic_error("Multiple swap operations not supported");
+                }
+            }
+
+            size_t get_axis_swap() {
+                return axis_swap;
+            }
+
+            size_t get_axis_result() {
+                return axis_result;
             }
 
             size_t get_op_axis1() {
@@ -263,13 +297,22 @@ namespace mmath {
         };
 
         /*
-         * >> OPERATORS
+         * <=> OPERATORS
          */
 
         template<matrix_axis_type T>
         matrix_axis_switch<T> operator<=>(matrix_axis<T> a, matrix_axis<T> b) {
             return matrix_axis_switch<T>{ a, b };
         }
+
+        template<matrix_axis_type T>
+        matrix_axis_switch<T> operator<=>(matrix_axis_switch<T> a, matrix_axis<T> b) {
+            return matrix_axis_switch<T>{ a, b };
+        }
+
+        /*
+         * >> OPERATORS
+         */
 
         template<matrix_axis_type T, typename S>
         matrix_axis_switch_generic<T, S> operator>>(matrix_axis_multiplied<T, S> a, matrix_axis<T> b) {
@@ -332,6 +375,15 @@ namespace mmath {
         template<matrix_axis_type T, typename S>
         matrix_axis_multiplied<T, S> operator*(matrix_axis<T> a, S b) {
             return matrix_axis_multiplied<T, S>{ std::move(b), a };
+        }
+
+        /*
+         * / operator
+         */
+
+        template<matrix_axis_type T, typename S>
+        matrix_axis_multiplied<T, S> operator/(matrix_axis<T> a, S b) {
+            return matrix_axis_multiplied<T, S>{ 1 / std::move(b), a };
         }
 
         /*

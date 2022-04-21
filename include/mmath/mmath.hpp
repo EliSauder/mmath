@@ -35,13 +35,13 @@ namespace mmath {
         }
 
     public:
-        matrix_base() : num_row(0), num_col(0), data() {};
+        matrix_base() : num_row(0), num_col(0), data() { };
 
-        matrix_base(size_t rows, size_t cols) : num_row(rows), num_col(cols), data(rows * cols, 0) {};
+        matrix_base(size_t rows, size_t cols) : num_row(rows), num_col(cols), data(rows * cols, 0) { };
 
         [[maybe_unused]]
         matrix_base(size_t rows, size_t cols, T default_value) : num_row(rows), num_col(cols),
-                                                                 data(rows * cols, default_value) {};
+                                                                 data(rows * cols, default_value) { };
 
         [[maybe_unused]]
         matrix_base(std::initializer_list<std::initializer_list<T>> il) : num_row(il.size()), num_col(0) {
@@ -94,7 +94,7 @@ namespace mmath {
 
         matrix_base<T> operator*(numeric auto b) const {
             if (this->is_empty()) throw std::invalid_argument("Matrices used in multiplication cannot be empty");
-            matrix_base<T> result{this->data, this->num_row, this->num_col};
+            matrix_base<T> result{ this->data, this->num_row, this->num_col };
             for (T& i: result.data) i = i * b;
             return result;
         }
@@ -107,7 +107,7 @@ namespace mmath {
 
             int number_entries_to_multiply = this->num_col;
 
-            matrix_base<T> result{this->num_row, b.num_col};
+            matrix_base<T> result{ this->num_row, b.num_col };
 
             for (int i = 1; i <= this->num_row; i++) {
                 for (int j = 1; j <= b.num_col; j++) {
@@ -144,107 +144,85 @@ namespace mmath {
 
         // Row operations
     private:
-        void swap_axis(matrix_base<T>& new_data, size_t axis_from, size_t axis_to, m_eo::matrix_axis_type axis_type) {
-            if (axis_to == axis_from) return;
-
-            bool is_column = axis_type == m_eo::matrix_axis_type::COLUMN;
-
-            size_t bound_to_exceed = is_column ? num_col : num_row;
-
-            if (axis_from > bound_to_exceed || axis_to > bound_to_exceed)
-                throw std::out_of_range("One of the axis requested lies outside the matrix");
-
-            size_t loop_bound = is_column ? num_row : num_col;
-
-            for (int i = 1; i <= loop_bound; ++i) {
-                T old_value = std::move(new_data(axis_to, i, is_column));
-                new_data(axis_to, i, is_column) = new_data(axis_from, i, is_column);
-                new_data(axis_from, i, is_column) = std::move(old_value);
-            }
-        }
-
-        void axis_add(matrix_base<T>& new_data, size_t axis_to, size_t axis_a, size_t axis_b,
-                      m_eo::matrix_axis_type axis_type, bool is_sub = false) {
-
-
-            bool is_column = axis_type == m_eo::matrix_axis_type::COLUMN;
-
-            size_t bound_to_exceed = is_column ? num_col : num_row;
-
-            // axis_to doesn't need to be checked as it is equal to either a or b
-            if (axis_b > bound_to_exceed || axis_a > bound_to_exceed)
-                throw std::out_of_range("One of the axis requested lies outside the matrix");
-
-            size_t loop_bound = is_column ? num_row : num_col;
-
-            for (int i = 1; i <= loop_bound; ++i) {
-                new_data(axis_to, i, is_column) = is_sub ? new_data(axis_a, i, is_column) -
-                                                           new_data(axis_b, i, is_column) :
-                                                  new_data(axis_a, i, is_column) +
-                                                  new_data(axis_b, i, is_column);
-
-            }
-        }
-
         template<expression S>
-        void axis_multiply(matrix_base<T>& new_data, size_t axis_from, size_t axis_to, S&& multiplicand,
-                           m_eo::matrix_axis_type axis_type) {
-            if (multiplicand == 1) return;
+        void axis_operation(matrix_base<T>& matrix, size_t axis_a, size_t axis_b, size_t axis_result, size_t axis_swap,
+                            bool is_sub, bool mul_is_a, std::optional<S> multiplicand,
+                            m_eo::matrix_axis_type axis_type) {
+
+            // If all we have been provided is data for a swap operation, and the swap rows are the same, return
+            if (axis_a != 0 && axis_b == 0 && axis_swap != 0 && !multiplicand && axis_a == axis_swap) return;
+
+            if (axis_b == 0 && !mul_is_a)
+                throw std::invalid_argument("If the multiplied axis is not a, b cannot be 0");
+            if (axis_a == 0)
+                throw std::invalid_argument("axis_a must be nonzero");
+            if ((axis_b != 0 || multiplicand) && axis_result == 0)
+                throw std::invalid_argument("If axis are being added or multiplied, axis_result must be provided");
+
+            if (axis_result == 0) axis_result = axis_a;
 
             bool is_column = axis_type == m_eo::matrix_axis_type::COLUMN;
 
             size_t bound_to_exceed = is_column ? num_col : num_row;
-
-            // axis_to doesn't need to be checked as it is equal to either a or b
-            if (axis_to > bound_to_exceed)
+            if (axis_a > bound_to_exceed || axis_b > bound_to_exceed || axis_result > bound_to_exceed ||
+                axis_swap > bound_to_exceed) {
                 throw std::out_of_range("One of the axis requested lies outside the matrix");
-
-            size_t loop_bound = is_column ? num_row : num_col;
-
-            for (int i = 1; i <= loop_bound; ++i) {
-                new_data(axis_to, i, is_column) = new_data(axis_from, i, is_column) * multiplicand;
             }
-        }
-
-        template<expression S>
-        void axis_multiply_add(matrix_base<T>& new_data, size_t axis_to, size_t axis_a, size_t axis_b, S&& multiplicand,
-                               bool mul_a,
-                               m_eo::matrix_axis_type axis_type, bool is_sub = false) {
-
-
-            bool is_column = axis_type == m_eo::matrix_axis_type::COLUMN;
-
-            size_t bound_to_exceed = is_column ? num_col : num_row;
-
-            // axis_to doesn't need to be checked as it is equal to either a or b
-            if (axis_b > bound_to_exceed || axis_a > bound_to_exceed)
-                throw std::out_of_range("One of the axis requested lies outside the matrix");
-
             size_t loop_bound = is_column ? num_row : num_col;
 
             for (int i = 1; i <= loop_bound; ++i) {
+                T value = std::move(matrix(axis_a, i, is_column));
 
-                if (is_sub) {
-                    if (mul_a) {
-                        new_data(axis_to, i, is_column) =
-                                (multiplicand * new_data(axis_a, i, is_column)) - new_data(axis_b, i, is_column);
-                        continue;
-                    }
-                    new_data(axis_to, i, is_column) =
-                            new_data(axis_a, i, is_column) - (multiplicand * new_data(axis_b, i, is_column));
-                    continue;
+                // Perform multiplication with a if specified;
+                if (mul_is_a && multiplicand) {
+                    value = (*multiplicand) * value;
                 }
 
-                if (mul_a) {
-                    new_data(axis_to, i, is_column) =
-                            (multiplicand * new_data(axis_a, i, is_column)) + new_data(axis_b, i, is_column);
-                    continue;
+                // Perform addition/subtraction with b
+                if (axis_b != 0) {
+
+                    // Get the value of b as a multiplied value or just the straight value
+                    T value_b = !mul_is_a && multiplicand ? (*multiplicand) * std::move(matrix(axis_b, i, is_column))
+                                                          : matrix(axis_b, i, is_column);
+
+                    value = is_sub ? std::move(value) - std::move(value_b) : std::move(value) + std::move(value_b);
                 }
 
-                new_data(axis_to, i, is_column) =
-                        new_data(axis_a, i, is_column) + (multiplicand * new_data(axis_b, i, is_column));
+                // Swap or place values in result
+                if (axis_swap != 0) {
+                    matrix(axis_result, i, is_column) = std::move(matrix(axis_swap, i, is_column));
+                    matrix(axis_swap, i, is_column) = std::move(value);
+                } else {
+                    matrix(axis_result, i, is_column) = std::move(value);
+                }
             }
         }
+
+//        void swap_axis(matrix_base<T>& new_data, size_t axis_from, size_t axis_to, m_eo::matrix_axis_type axis_type) {
+//            this->axis_operation<int>(new_data, axis_from, 0, 0, axis_to, false, true, std::nullopt,
+//                                      axis_type);
+//        }
+//
+//        void axis_add(matrix_base<T>& new_data, size_t axis_to, size_t axis_a, size_t axis_b,
+//                      m_eo::matrix_axis_type axis_type, bool is_sub = false) {
+//            this->axis_operation<int>(new_data, axis_a, axis_b, axis_to, 0, is_sub, true, std::nullopt,
+//                                      axis_type);
+//        }
+//
+//        template<expression S>
+//        void axis_multiply(matrix_base<T>& new_data, size_t axis_from, size_t axis_to, S&& multiplicand,
+//                           m_eo::matrix_axis_type axis_type) {
+//            this->axis_operation<S>(new_data, axis_from, 0, axis_to, 0, false, true, multiplicand,
+//                                    axis_type);
+//        }
+//
+//        template<expression S>
+//        void axis_multiply_add(matrix_base<T>& new_data, size_t axis_to, size_t axis_a, size_t axis_b, S&& multiplicand,
+//                               bool mul_a,
+//                               m_eo::matrix_axis_type axis_type, bool is_sub = false) {
+//            this->axis_operation<S>(new_data, axis_a, axis_b, axis_to, 0, is_sub, mul_a, multiplicand,
+//                                    axis_type);
+//        }
 
     public:
 
@@ -254,14 +232,13 @@ namespace mmath {
                 throw std::invalid_argument("Elementary operations cannot be performed on an empty matrix.");
             }
 
-            matrix_base<T> new_data{this->data, this->num_row, this->num_col};
-            if (axis.get_axis_from() != 0) {
-                this->swap_axis(new_data, axis.get_axis_from(), axis.get_axis_to(), axis.get_type());
-                return new_data;
-            }
+            matrix_base<T> new_data{ this->data, this->num_row, this->num_col };
 
-            axis_add(new_data, axis.get_axis_to(), axis.get_op_axis1(), axis.get_op_axis2(), axis.get_type(),
-                     axis.is_sub());
+            this->axis_operation<int>(new_data, axis.get_op_axis1(), axis.get_op_axis2(),
+                                      axis.get_axis_result(),
+                                      axis.get_axis_swap(), axis.is_sub(), true, std::nullopt,
+                                      axis.get_type());
+
 
             return new_data;
         }
@@ -272,23 +249,30 @@ namespace mmath {
                 throw std::invalid_argument("Elementary operations cannot be performed on an empty matrix.");
             }
 
-            matrix_base<T> new_data{this->data, this->num_row, this->num_col};
-            if (axis.get_op_axis2() == 0) {
+            matrix_base<T> new_data{ this->data, this->num_row, this->num_col };
 
-                axis_multiply(new_data, axis.get_op_axis1(), axis.get_axis_to(), axis.get_multiplicand(),
-                              axis.get_type());
-                return new_data;
-            }
+            this->axis_operation<S>(new_data, axis.get_op_axis1(), axis.get_op_axis2(),
+                                    axis.get_axis_result(),
+                                    axis.get_axis_swap(), axis.is_sub(), axis.is_mul_axis1(),
+                                    std::move(axis.get_multiplicand()),
+                                    axis.get_type());
 
-            axis_multiply_add(new_data, axis.get_axis_to(), axis.get_op_axis1(), axis.get_op_axis2(),
-                              axis.get_multiplicand(), axis.is_mul_axis1(), axis.get_type(), axis.is_sub());
+//            if (axis.get_op_axis2() == 0) {
+//
+//                axis_multiply(new_data, axis.get_op_axis1(), axis.get_axis_to(), axis.get_multiplicand(),
+//                              axis.get_type());
+//                return new_data;
+//            }
+//
+//            axis_multiply_add(new_data, axis.get_axis_to(), axis.get_op_axis1(), axis.get_op_axis2(),
+//                              axis.get_multiplicand(), axis.is_mul_axis1(), axis.get_type(), axis.is_sub());
             return new_data;
         }
 
     public:
         [[nodiscard]]
         matrix_base<T> transpose() const {
-            matrix_base<T> new_data{num_col, num_row};
+            matrix_base<T> new_data{ num_col, num_row };
 
             for (int i = 1; i <= num_row; ++i) {
                 for (int j = 1; j <= num_col; ++j) {
@@ -376,7 +360,7 @@ namespace mmath {
             for (int i = 0; i < data.size(); i++)
                 new_data[i] = add_sub ? this->data[i] + b.data[i] : this->data[i] - b.data[i];
 
-            return matrix_base<T>{std::move(new_data), num_row, num_col};
+            return matrix_base<T>{ std::move(new_data), num_row, num_col };
         }
     };
 
@@ -387,7 +371,7 @@ namespace mmath {
 
     template<expression T>
     matrix_base<T> make_identity_matrix(size_t size) {
-        matrix_base<T> result{size, size};
+        matrix_base<T> result{ size, size };
 
         for (int i = 1; i <= size; ++i) {
             result(i, i) = 1;
@@ -406,7 +390,7 @@ namespace mmath {
         if (b == 0)
             return make_identity_matrix<T>(this->num_row);
 
-        matrix_base<T> result{this->data, this->num_row, this->num_col};
+        matrix_base<T> result{ this->data, this->num_row, this->num_col };
 
         for (int i = 1; i < b; ++i)
             result = result * (*this);
