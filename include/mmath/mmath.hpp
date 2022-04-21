@@ -9,6 +9,9 @@
 #include <vector>
 #include <ostream>
 #include <queue>
+#include <type_traits>
+#include <limits>
+#include <cmath>
 
 #include "mmath_concepts.hpp"
 #include "mmath_matrixelementary.hpp"
@@ -110,6 +113,7 @@ namespace mmath {
 
 
     public:
+        [[nodiscard]]
         T tr() const {
             if (this->is_empty()) {
                 throw std::invalid_argument("Matrix must not be empty to calculate trace");
@@ -131,21 +135,53 @@ namespace mmath {
     public:
 
         mmath::matrix_base<T> operator|(matrix_row_switch row) {
-            // TODO: Implement
+            if (this->is_empty()) {
+                throw std::invalid_argument("Elementary operations cannot be performed on an empty matrix.");
+            }
+
+            matrix_base<T> new_data{this->data, this->num_row, this->num_col};
+            if (row.get_row_from() != 0) {
+                if (row.get_row_from() == row.get_row_to()) return new_data;
+
+                if (row.get_row_from() > num_row || row.get_row_to() > num_row)
+                    throw std::out_of_range("One of the rows requested lies outside the matrix");
+
+                // Swap Rows
+                for (int i = 1; i <= num_col; ++i) {
+                    T old_value = std::move(new_data(row.get_row_to(), i));
+                    new_data(row.get_row_to(), i) = new_data(row.get_row_from(), i);
+                    new_data(row.get_row_from(), i) = std::move(old_value);
+                }
+                return new_data;
+            }
+
+            // TODO: Implement Row Addition and Replace
+            return new_data;
         }
 
         template<expression S>
         mmath::matrix_base<T> operator|(matrix_row_switch_generic<S> row) {
-            // TODO: Implement
+            if (this->is_empty()) {
+                throw std::invalid_argument("Elementary operations cannot be performed on an empty matrix.");
+            }
+
+            matrix_base<T> new_data{this->data, this->num_row, this->num_col};
+            if (row.get_op_row2() == 0) {
+                // TODO: Implement Multiply and Replace
+                return new_data;
+            }
+            // TODO: Implement Multiply, then add and replace
+            return new_data;
         }
 
     public:
-        matrix_base<T> transpose() {
-            matrix_base<T> new_data{num_row, num_col};
+        [[nodiscard]]
+        matrix_base<T> transpose() const {
+            matrix_base<T> new_data{num_col, num_row};
 
             for (int i = 1; i <= num_row; ++i) {
                 for (int j = 1; j <= num_col; ++j) {
-                    new_data(j, i) = (*this)(i, j);
+                    new_data(j, i) = std::move((*this)(i, j));
                 }
             }
 
@@ -195,6 +231,30 @@ namespace mmath {
             return this->num_row;
         }
 
+        bool operator==(const matrix_base<T>& m) const {
+            if (this->size_row() != m.size_row() || this->size_col() != m.size_col()) {
+                return false;
+            }
+
+            for (int i = 0; i < num_col * num_row; ++i) {
+                if (std::is_floating_point<T>()) {
+                    // TODO: Separate floating point comparison into separate header
+                    if (std::abs(this->data[i] - m.data[i]) > std::numeric_limits<T>::epsilon()) {
+                        return false;
+                    }
+
+                } else if (this->data[i] != m.data[i]) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        bool operator!=(const matrix_base<T>& m) {
+            return !((*this) == (m));
+        }
+
     private:
         [[nodiscard]]
         matrix_base<T> add_sub_matrix(const matrix_base<T>& b, bool add_sub) const {
@@ -213,7 +273,7 @@ namespace mmath {
         matrix_base<int> m{};
         m | 2_R + 2 * 3_R >> 2_R;
         m | 2_R + 3_R >> 2_R;
-        m | 3_R >> 2_R;
+        m | 3_R <=> 2_R;
         m | 2 * 3_R >> 2_R;
     }
 
@@ -259,7 +319,7 @@ namespace mmath {
 
     template<expression T>
     matrix_base<T> transpose(const matrix_base<T>& m) {
-        return transpose(m);
+        return m.transpose();
     }
 
     template<expression_printable T>

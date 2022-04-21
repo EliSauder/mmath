@@ -16,18 +16,20 @@ namespace mmath {
     concept expression_base = numeric<S> &&
                               std::default_initializable<T> &&
                               std::copyable<T> && requires(T a) {
-        { a * a };
-        { a + a };
-        { a - a };
+        { a * a } -> std::convertible_to<T>;
+        { a + a } -> std::convertible_to<T>;
+        { a - a } -> std::convertible_to<T>;
+        { a == a } -> std::convertible_to<bool>;
+        { a != a } -> std::convertible_to<bool>;
     } && requires(T a, S b) {
-        { a * b };
-        { b * a };
-        { a + b };
-        { b + a };
-        { b == a };
-        { a == b };
-        { b != a };
-        { a != b };
+        { a * b } -> std::convertible_to<T>;
+        { b * a } -> std::convertible_to<T>;
+        { a + b } -> std::convertible_to<T>;
+        { b + a } -> std::convertible_to<T>;
+        { b == a } -> std::convertible_to<bool>;
+        { a == b } -> std::convertible_to<bool>;
+        { b != a } -> std::convertible_to<bool>;
+        { a != b } -> std::convertible_to<bool>;
     };
 
     template<typename T>
@@ -49,17 +51,6 @@ namespace mmath {
     expression_base<T, float> &&
     expression_base<T, double> &&
     expression_base<T, long double>;
-
-
-    template<typename E, typename Se>
-    concept subexpression = expression<E> && expression<Se> && requires(E a, Se b) {
-        { a * b } -> std::convertible_to<E>;
-        { b * a } -> std::convertible_to<E>;
-        { a + b } -> std::convertible_to<E>;
-        { b + a } -> std::convertible_to<E>;
-        { a - b } -> std::convertible_to<E>;
-        { b - a } -> std::convertible_to<E>;
-    };
 
     template<typename T>
     concept expression_printable = expression<T> && requires(std::ostream& os, T a) {

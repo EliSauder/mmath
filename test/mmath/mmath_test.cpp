@@ -282,6 +282,68 @@ TEMPLATE_TEST_CASE("Matrix Creation", "[matrix_base][template]", signed char, //
     }
 }
 
+TEST_CASE("Matrix Comparison") {
+    SECTION("Equality - int") {
+        mmath::matrix_base<int> matrix_a{};
+        mmath::matrix_base<int> matrix_b{};
+        CHECK(matrix_a == matrix_b);
+        CHECK_FALSE(matrix_a != matrix_b);
+
+        matrix_a = mmath::matrix_base<int>{0, 0};
+        matrix_b = mmath::matrix_base<int>{0, 0};
+        CHECK(matrix_a == matrix_b);
+        CHECK_FALSE(matrix_a != matrix_b);
+
+        matrix_a = mmath::matrix_base<int>{0, 3};
+        matrix_b = mmath::matrix_base<int>{0, 3};
+        CHECK(matrix_a == matrix_b);
+        CHECK_FALSE(matrix_a != matrix_b);
+
+        matrix_a = mmath::matrix_base<int>{3, 0};
+        matrix_b = mmath::matrix_base<int>{3, 0};
+        CHECK(matrix_a == matrix_b);
+        CHECK_FALSE(matrix_a != matrix_b);
+
+        matrix_a = mmath::matrix_base<int>{3, 3};
+        matrix_b = mmath::matrix_base<int>{3, 3};
+        CHECK(matrix_a == matrix_b);
+        CHECK_FALSE(matrix_a != matrix_b);
+
+        matrix_a = mmath::matrix_base<int>{4, 3};
+        matrix_b = mmath::matrix_base<int>{4, 3};
+        CHECK(matrix_a == matrix_b);
+        CHECK_FALSE(matrix_a != matrix_b);
+
+        matrix_a = mmath::matrix_base<int>{3, 4};
+        matrix_b = mmath::matrix_base<int>{3, 4};
+        CHECK(matrix_a == matrix_b);
+        CHECK_FALSE(matrix_a != matrix_b);
+
+        matrix_a = mmath::matrix_base<int>{{0, 0, 0},
+                                           {0, 0, 0}};
+        matrix_b = mmath::matrix_base<int>{{0, 0, 0},
+                                           {0, 0, 0}};
+        CHECK(matrix_a == matrix_b);
+        CHECK_FALSE(matrix_a != matrix_b);
+
+        matrix_a = mmath::matrix_base<int>{{1, 0, 0},
+                                           {0, 1, 0}};
+        matrix_b = mmath::matrix_base<int>{{1, 0, 0},
+                                           {0, 1, 0}};
+        CHECK(matrix_a == matrix_b);
+        CHECK_FALSE(matrix_a != matrix_b);
+
+        matrix_a = mmath::matrix_base<int>{{5, 6, 7},
+                                           {1, 3, 2},
+                                           {7, 8, 0}};
+        matrix_b = mmath::matrix_base<int>{{5, 6, 7},
+                                           {1, 3, 2},
+                                           {7, 8, 0}};
+        CHECK(matrix_a == matrix_b);
+        CHECK_FALSE(matrix_a != matrix_b);
+    }
+}
+
 TEST_CASE("Matrix Addition") {
 
     SECTION("Empty Matrix") {
@@ -864,4 +926,45 @@ TEST_CASE("Matrix Transpose") {
     CHECK(result2(3, 2) == n(3, 2));
     CHECK(result1(3, 3) == n(3, 3));
     CHECK(result2(3, 3) == n(3, 3));
+}
+
+TEST_CASE("Matrix Elementary Operations - Invalid Operations") {
+    using namespace mmath;
+
+    mmath::matrix_base<int> m{3, 0};
+    CHECK_THROWS_AS(m | 1_R <=> 2_R, std::invalid_argument);
+    //CHECK_THROWS_AS(m | 1_C <=> 2_, std::invalid_argument);
+
+    m = mmath::matrix_base<int>{{1, 2, 3},
+                                {4, 5, 6},
+                                {7, 8, 9}};
+
+    // Check swapping out of bounds
+    CHECK_THROWS_AS(m | 4_R <=> 1_R, std::out_of_range);
+
+    // Check Sending results to incorrect row
+    CHECK_THROWS_AS(m | 2 * 1_R >> 2_R, std::logic_error);
+    CHECK_THROWS_AS(m | 2 * 1_R + 2_R >> 1_R, std::logic_error);
+    CHECK_THROWS_AS(m | 2_R + 2 * 1_R >> 1_R, std::logic_error);
+
+    // Check multiplying by zero
+    CHECK_THROWS_AS(m | 0 * 1_R >> 1_R, std::invalid_argument);
+    CHECK_THROWS_AS(m | 0 * 1_R >> 1_R, std::invalid_argument);
+    CHECK_THROWS_AS(m | 2_R + 0 * 1_R >> 2_R, std::invalid_argument);
+    CHECK_THROWS_AS(m | 0 * 1_R + 2_R >> 2_R, std::invalid_argument);
+}
+
+TEST_CASE("Matrix Elementary Operations - Swap") {
+    mmath::matrix_base<int> m{{1, 2, 3},
+                              {4, 5, 6},
+                              {7, 8, 9}};
+
+    mmath::matrix_base<int> n{{4, 5, 6},
+                              {1, 2, 3},
+                              {7, 8, 9}};
+
+    using namespace mmath;
+    auto swapped = m | 1_R <=> 2_R;
+    CHECK(swapped == n);
+    CHECK(swapped != m);
 }
