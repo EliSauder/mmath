@@ -190,8 +190,9 @@ namespace mmath {
                 // Perform addition/subtraction with b
                 if (axis_b != 0) {
                     // Get the value of b as a multiplied value or just the straight value
-                    T value_b = !mul_is_a && multiplicand ? (*multiplicand) * std::move(matrix(axis_b, i, is_column))
-                                                          : matrix(axis_b, i, is_column);
+                    T value_b = !mul_is_a && multiplicand
+                                    ? (*multiplicand) * std::move(matrix(axis_b, i, is_column))
+                                    : matrix(axis_b, i, is_column);
 
                     value = is_sub ? std::move(value) - std::move(value_b) : std::move(value) + std::move(value_b);
                 }
@@ -251,8 +252,9 @@ namespace mmath {
 
             matrix_base<T> new_data{this->data, this->num_row, this->num_col};
 
-            this->axis_operation<int>(new_data, axis.get_op_axis1(), axis.get_op_axis2(), axis.get_axis_result(),
-                                      axis.get_axis_swap(), axis.is_sub(), true, std::nullopt, axis.get_type());
+            this->axis_operation<
+                int>(new_data, axis.get_op_axis1(), axis.get_op_axis2(), axis.get_axis_result(), axis.get_axis_swap(),
+                     axis.is_sub(), true, std::nullopt, axis.get_type());
 
             return new_data;
         }
@@ -265,9 +267,9 @@ namespace mmath {
 
             matrix_base<T> new_data{this->data, this->num_row, this->num_col};
 
-            this->axis_operation<S>(new_data, axis.get_op_axis1(), axis.get_op_axis2(), axis.get_axis_result(),
-                                    axis.get_axis_swap(), axis.is_sub(), axis.is_mul_axis1(),
-                                    std::move(axis.get_multiplicand()), axis.get_type());
+            this->axis_operation<
+                S>(new_data, axis.get_op_axis1(), axis.get_op_axis2(), axis.get_axis_result(), axis.get_axis_swap(),
+                   axis.is_sub(), axis.is_mul_axis1(), std::move(axis.get_multiplicand()), axis.get_type());
 
             //            if (axis.get_op_axis2() == 0) {
             //
