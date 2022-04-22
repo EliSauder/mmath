@@ -9,33 +9,34 @@
 
 namespace mmath {
 
-    template<typename T>
-    concept numeric = (std::integral<T> || std::floating_point<T>) && !std::same_as<T, bool>;
+    template <typename T>
+    concept numeric = (std::integral<T> || std::floating_point<T>) && !
+    std::same_as<T, bool>;
 
-    template<typename T, typename S>
-    concept expression_base = numeric<S> &&
-        std::default_initializable<T> &&
-        std::copyable<T> &&
+    // clang-format off
+    template <typename T, typename S>
+    concept expression_base =
+        numeric<S> && std::default_initializable<T> && std::copyable<T> &&
         requires(T a) {
-            { a * a } -> std::convertible_to<T>;
+            { a* a } -> std::convertible_to<T>;
             { a / a } -> std::convertible_to<T>;
             { a + a } -> std::convertible_to<T>;
             { a - a } -> std::convertible_to<T>;
             { a == a } -> std::convertible_to<bool>;
             { a != a } -> std::convertible_to<bool>;
-    }&& requires(T a, S b) {
-        { a * b } -> std::convertible_to<T>;
-        { b * a } -> std::convertible_to<T>;
-        { a / b } -> std::convertible_to<T>;
-        { a + b } -> std::convertible_to<T>;
-        { b + a } -> std::convertible_to<T>;
-        { b == a } -> std::convertible_to<bool>;
-        { a == b } -> std::convertible_to<bool>;
-        { b != a } -> std::convertible_to<bool>;
-        { a != b } -> std::convertible_to<bool>;
-    };
-
-    template<typename T>
+        } &&
+        requires(T a, S b) {
+            { a* b } -> std::convertible_to<T>;
+            { b* a } -> std::convertible_to<T>;
+            { a / b } -> std::convertible_to<T>;
+            { a + b } -> std::convertible_to<T>;
+            { b + a } -> std::convertible_to<T>;
+            { b == a } -> std::convertible_to<bool>;
+            { a == b } -> std::convertible_to<bool>;
+            { b != a } -> std::convertible_to<bool>;
+            { a != b } -> std::convertible_to<bool>;
+        };
+    template <typename T>
     concept expression =
         expression_base<T, signed char> &&
         expression_base<T, unsigned char> &&
@@ -54,11 +55,14 @@ namespace mmath {
         expression_base<T, float> &&
         expression_base<T, double> &&
         expression_base<T, long double>;
+    // clang-format on
 
-    template<typename T>
-    concept expression_printable = expression<T> && requires(std::ostream & os, T a) {
-        { os << a } -> std::convertible_to<std::ostream&>;
-    };
-}
+    template <typename T>
+    concept expression_printable =
+        expression<T> &&
+        requires(std::ostream& os, T a) {
+            { os << a } -> std::convertible_to<std::ostream&>;
+        };
+}  // namespace mmath
 
-#endif //MMATH_MMATH_CONCEPTS_IXX
+#endif  // MMATH_MMATH_CONCEPTS_IXX
