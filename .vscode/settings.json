@@ -1,5 +1,5 @@
 {
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-    "sonarlint.pathToCompileCommands": "/Users/esauder/CLionProjects/mmath/build/compile_commands.json",
-    "C_Cpp.clang_format_style":"file"
+    "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/compile_commands.json",
+    "C_Cpp.clang_format_style": "file"
 }
