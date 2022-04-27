@@ -6,6 +6,7 @@
 #define MMATH_MMATH_CONCEPTS_IXX
 
 #include <concepts>
+#include <type_traits>
 
 namespace mmath {
 
@@ -18,7 +19,7 @@ namespace mmath {
     concept expression_base =
         numeric<S> && std::default_initializable<T> && std::copyable<T> &&
         requires(T a) {
-            { a* a } -> std::convertible_to<T>;
+            { a * a } -> std::convertible_to<T>;
             { a / a } -> std::convertible_to<T>;
             { a + a } -> std::convertible_to<T>;
             { a - a } -> std::convertible_to<T>;
