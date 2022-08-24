@@ -1,74 +1,79 @@
 # mmath
+
 A Matrix Math library I am working on for fun/practice using c++20.
 
 ## Features
+
 ### Developed/Being Devloped
 
 - [ ] Matricies
-  - [x] Creation for any integral/fp type as well as custom types (matching the `expression` concept)
-  - [x] Addition, subtraction, multiplication and power (using +, -, \*, ^ respectively)
-  - [x] Constant multiplication (using \*) 
-  - [x] Trace
-  - [x] Transpose
-  - [x] Empty Matrix Support   
-  - [x] Element access
-  - [x] Elementary axis operations (Using operators +, *, >>, <=>)
-    - [x] Row/Column literals (_R, _C)
-    - [x] Swap axis (<=>)
-    - [x] Add axis together (_R/_C + _R/_C >> _R/_C)
-    - [x] Multiply axis (\<value\> \* _R/_C >> _R/_C)
-    - [x] Add axis with multiplied axis (Combination of above 2)
-  - [ ] Determinate
-  - [ ] Upper/Lower Triangle matrix creation
-  - [ ] Augmented Matricies/Linear systems
-  - [ ] R.E.F
-  - [ ] R.R.E.F
-  - [ ] Inverse
-  - [ ] Adjoint
-  - [ ] Checks
-    - [x] Is square
-    - [x] Is identity  
-    - [x] Is empty
-    - [x] Is zero
-    - [x] Equality & Inequalty (== & != between two matricies) 
-    - [ ] Is diagonal
-    - [ ] Is scalar
-    - [ ] Is triangular
-    - [ ] Is upper triangular
-    - [ ] Is lower triangular
-    - [ ] Is symmetric
-    - [ ] Is skew symmetric
-    - [ ] Is invertible/Is nonsingular
-    - [ ] Is homogenous system
-  - [ ] Algorithms
-    - [ ] Gauss-Jordan reduction
+    - [x] Creation for any integral/fp type as well as custom types (matching the `expression` concept)
+    - [x] Addition, subtraction, multiplication and power (using +, -, \*, ^ respectively)
+    - [x] Constant multiplication (using \*)
+    - [x] Trace
+    - [x] Transpose
+    - [x] Empty Matrix Support
+    - [x] Element access
+    - [x] Elementary axis operations (Using operators +, *, >>, <=>)
+        - [x] Row/Column literals (_R, _C)
+        - [x] Swap axis (<=>)
+        - [x] Add axis together (_R/_C + _R/_C >> _R/_C)
+        - [x] Multiply axis (\<value\> \* _R/_C >> _R/_C)
+        - [x] Add axis with multiplied axis (Combination of above 2)
+    - [ ] Determinate
+    - [ ] Upper/Lower Triangle matrix creation
+    - [ ] Augmented Matricies/Linear systems
+    - [ ] R.E.F
+    - [ ] R.R.E.F
+    - [ ] Inverse
+    - [ ] Adjoint
+    - [ ] Checks
+        - [x] Is square
+        - [x] Is identity
+        - [x] Is empty
+        - [x] Is zero
+        - [x] Equality & Inequalty (== & != between two matricies)
+        - [ ] Is diagonal
+        - [ ] Is scalar
+        - [ ] Is triangular
+        - [ ] Is upper triangular
+        - [ ] Is lower triangular
+        - [ ] Is symmetric
+        - [ ] Is skew symmetric
+        - [ ] Is invertible/Is nonsingular
+        - [ ] Is homogenous system
+    - [ ] Algorithms
+        - [ ] Gauss-Jordan reduction
 
 ### Being Considered
+
 - [ ] Mathematical Expressions
-  - [ ] LaTeX serialization
-  - [ ] LaTeX deserialization
+    - [ ] LaTeX serialization
+    - [ ] LaTeX deserialization
 - [ ] Tensors
 - [ ] Vectors
 - [ ] Sets
 - [ ] Floating Point Comparison
 - [ ] Mathematical Algorithms
-  - [ ] Power
-  - [ ] Square root
-  - [ ] Fast inverse square root
-  - [ ] Celiing
-  - [ ] Floor
-  - [ ] etc...
+    - [ ] Power
+    - [ ] Square root
+    - [ ] Fast inverse square root
+    - [ ] Celiing
+    - [ ] Floor
+    - [ ] etc...
 
 ## Details
 
 ### Matrix - Elementary Axis Operations
+
 #### Examples:
+
 ```cpp
 mmath::matrix_base<int> m{{1, 1, 3}, 
                           {4, 1, 6}, 
                           {7, 1, 9}};
 
-using namespace mmath;
+using namespace mmath::literals;
 // For any of the below operations, you can replace
 // _R with _C to switch to column operations.
 
