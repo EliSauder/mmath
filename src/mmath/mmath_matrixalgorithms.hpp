@@ -13,8 +13,8 @@
 
 namespace mmath {
 
-    template <expression T>
-    T tr(const matrix_base<T>& m) {
+    template<expression T>
+    T trace(const matrix_base<T>& m) {
         if (m.is_empty()) {
             throw std::invalid_argument("Matrix must not be empty to calculate trace");
         }
@@ -22,8 +22,9 @@ namespace mmath {
             throw std::invalid_argument("Matrix must be square to calculate trace");
         }
 
-        T sum = T{};
+        T sum = T{ };
 
+        // TODO: Add from both ends of matrix to improve speed
         for (int i = 1; i <= m.size_row(); ++i) {
             sum = sum + m(i, i);
         }
@@ -31,22 +32,15 @@ namespace mmath {
         return sum;
     }
 
-    template <expression T>
-    matrix_base<T>& transpose(matrix_base<T>& m) {
-        for (int i = 1; i <= m.size_row(); ++i) {
-            for (int j = 1; j <= m.size_col(); ++j) {
-                T tmp_value = std::move(m(j, i));
-                m(j, i) = std::move(m(i, j));
-                m(i, j) = std::move(tmp_value);
-            }
-        }
-
-        return m;
+    template<expression T>
+    T tr(const matrix_base<T>& m) {
+        return trace(m);
     }
 
-    template <expression T>
+    // TODO: Call modifying version of function to reduce code duplicity
+    template<expression T>
     matrix_base<T> transpose(const matrix_base<T>& m) {
-        matrix_base<T> new_data{m.size_row(), m.size_col()};
+        matrix_base<T> new_data{ m.size_row(), m.size_col() };
 
         for (int i = 1; i <= m.size_row(); ++i) {
             for (int j = 1; j <= m.size_col(); ++j) {
@@ -57,7 +51,7 @@ namespace mmath {
         return new_data;
     }
 
-    template <expression T>
+    template<expression T>
     matrix_base<T>& triangular(matrix_base<T>& m, bool is_upper) {
         if (!m.is_square()) {
             throw std::invalid_argument("Matrix must be square");
@@ -66,39 +60,39 @@ namespace mmath {
         for (unsigned int i = 1; i <= m.size_row(); i++) {
             for (unsigned int j = 1; j < i; j++) {
                 if (is_upper) {
-                    m | matrix_row{i} - m(i, 1) * matrix_row{j - 1} >> matrix_row{i};
+                    m | matrix_row{ i } - m(i, 1) * matrix_row{ j - 1 } >> matrix_row{ i };
                     continue;
                 }
-                m | matrix_column{i} - m(i, 1) * matrix_column{j - 1} >> matrix_column{i};
+                m | matrix_column{ i } - m(i, 1) * matrix_column{ j - 1 } >> matrix_column{ i };
             }
 
-            m | matrix_row{i} / m(i, i) >> matrix_row{i};
+            m | matrix_row{ i } / m(i, i) >> matrix_row{ i };
         }
     }
 
-    template <expression T>
+    template<expression T>
     matrix_base<T> triangular(const matrix_base<T>& m, bool is_upper) {
         matrix_base<T> new_data = m;
         triangular(new_data, is_upper);
         return new_data;
     }
 
-    template <expression T>
+    template<expression T>
     matrix_base<T>& upper_triangular(matrix_base<T>& m) {
         return triangular(m, true);
     }
 
-    template <expression T>
+    template<expression T>
     matrix_base<T> upper_triangular(const matrix_base<T>& m) {
         return triangular(m, true);
     }
 
-    template <expression T>
+    template<expression T>
     matrix_base<T>& lower_triangular(matrix_base<T>& m) {
         return triangular(m, false);
     }
 
-    template <expression T>
+    template<expression T>
     matrix_base<T> lower_triangular(const matrix_base<T>& m) {
         return triangular(m, false);
     }

@@ -27,8 +27,8 @@ namespace mmath {
             { a != a } -> std::convertible_to<bool>;
         } &&
         requires(T a, S b) {
-            { a* b } -> std::convertible_to<T>;
-            { b* a } -> std::convertible_to<T>;
+            { a * b } -> std::convertible_to<T>;
+            { b * a } -> std::convertible_to<T>;
             { a / b } -> std::convertible_to<T>;
             { a + b } -> std::convertible_to<T>;
             { b + a } -> std::convertible_to<T>;
